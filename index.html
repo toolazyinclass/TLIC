@@ -117,7 +117,7 @@ body {
 </a>
 
 <script>
-// ORIGINAL AUDIO BEHAVIOR
+// AUDIO (click to start)
 const audio = document.getElementById("bg-audio");
 
 document.addEventListener("click", () => {
@@ -143,7 +143,7 @@ setInterval(() => {
     document.getElementById("logo").src = logos[currentLogo];
 }, 1000);
 
-// ENHANCED GLITCH (15s + ominous audio)
+// GLITCH FUNCTION
 function triggerGlitch() {
     const logoContainer = document.getElementById("logoContainer");
 
@@ -153,13 +153,10 @@ function triggerGlitch() {
     let originalRate = audio.playbackRate;
     let count = 0;
 
-    // lower pitch slightly
     audio.playbackRate = 0.85;
 
     let glitchInterval = setInterval(() => {
         audio.currentTime = originalTime;
-
-        // subtle volume wobble
         audio.volume = 0.6 + Math.random() * 0.4;
 
         count++;
@@ -168,16 +165,21 @@ function triggerGlitch() {
 
     setTimeout(() => {
         logoContainer.classList.remove("glitch");
-
-        // restore normal audio
         audio.playbackRate = originalRate;
         audio.volume = 1;
 
+        scheduleNextGlitch(); // schedule next after this finishes
     }, 700);
 }
 
-// FIXED 15 SECOND INTERVAL
-setInterval(triggerGlitch, 15000);
+// RANDOM TIMER (30s → 3min)
+function scheduleNextGlitch() {
+    let time = (Math.random() * (180000 - 30000)) + 30000;
+    setTimeout(triggerGlitch, time);
+}
+
+// START LOOP
+scheduleNextGlitch();
 </script>
 
 </body>
