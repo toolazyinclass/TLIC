@@ -64,7 +64,6 @@ body {
 
 <img src="background2.gif" class="background">
 
-<!-- AUDIO -->
 <audio id="bg-audio" loop>
     <source src="song2.wav" type="audio/wav">
 </audio>
@@ -72,21 +71,35 @@ body {
 <div id="container"></div>
 
 <script>
-// AUDIO FIX
 const audio = document.getElementById("bg-audio");
 
-// try immediate play
-audio.play().catch(() => {});
+// RESTORE AUDIO STATE
+let savedTime = localStorage.getItem("audioTime");
+let wasPlaying = localStorage.getItem("audioPlaying");
 
-// fallback interaction triggers
-const playAudio = () => {
-    audio.play();
-    document.removeEventListener("click", playAudio);
-    document.removeEventListener("mousemove", playAudio);
-};
+if (savedTime) {
+    audio.currentTime = parseFloat(savedTime);
+}
 
-document.addEventListener("click", playAudio);
-document.addEventListener("mousemove", playAudio);
+// TRY PLAY
+function tryPlay() {
+    audio.play().catch(() => {});
+}
+
+// If user already interacted before (from page1), this works
+if (wasPlaying === "true") {
+    tryPlay();
+}
+
+// fallback interaction
+document.addEventListener("click", tryPlay, { once: true });
+document.addEventListener("mousemove", tryPlay, { once: true });
+
+// SAVE STATE CONTINUOUSLY
+setInterval(() => {
+    localStorage.setItem("audioTime", audio.currentTime);
+    localStorage.setItem("audioPlaying", !audio.paused);
+}, 500);
 
 // RANDOM COUNT (7–10)
 let count = Math.floor(Math.random() * 4) + 7;
