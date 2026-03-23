@@ -64,10 +64,17 @@ body {
 
 <img src="background2.gif" class="background">
 
+<!-- AUDIO -->
+<audio id="bg-audio" autoplay loop>
+    <source src="song2.wav" type="audio/wav">
+</audio>
+
 <div id="container"></div>
 
 <script>
-const container = document.getElementById("container");
+// FORCE PLAY (for browser compatibility)
+const audio = document.getElementById("bg-audio");
+audio.play().catch(() => {});
 
 // RANDOM COUNT (7–10)
 let count = Math.floor(Math.random() * 4) + 7;
