@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Too Lazy, In Class</title>
+<meta name="description" content="Bored in class? Click here!">
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+}
+
+/* BACKGROUND */
+.background {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -2;
+}
+
+/* LOGO */
+.logo-container {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.logo {
+    width: 1100px;
+    opacity: 0.9;
+    mix-blend-mode: screen;
+}
+
+/* OBJECTS */
+.object {
+    position: absolute;
+    cursor: pointer;
+    z-index: 2;
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    filter: contrast(110%) brightness(90%);
+    transition: transform 0.2s ease-out;
+}
+
+/* FLOAT */
+.float-wrapper {
+    position: absolute;
+    animation: floatAnim 4s ease-in-out infinite;
+}
+
+@keyframes floatAnim {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+}
+
+/* SIZES */
+.chair { width: 250px; }
+.book { width: 120px; }
+.apple { width: 180px; }
+
+/* HOVER */
+.object:hover {
+    animation: shake 0.05s infinite;
+    transform: scale(1.15);
+    transition: transform 5s linear;
+}
+
+/* SHAKE */
+@keyframes shake {
+    0% { transform: translate(1px, 1px) scale(1.15); }
+    25% { transform: translate(-2px, 2px) scale(1.15); }
+    50% { transform: translate(2px, -1px) scale(1.15); }
+    75% { transform: translate(-1px, -2px) scale(1.15); }
+    100% { transform: translate(1px, 2px) scale(1.15); }
+}
+
+/* GLITCH */
+.glitch {
+    animation: glitchAnim 0.1s infinite;
+}
+
+@keyframes glitchAnim {
+    0% { transform: translate(10px, -10px) skew(5deg); }
+    25% { transform: translate(-15px, 5px) skew(-5deg); }
+    50% { transform: translate(10px, 10px) skew(3deg); }
+    75% { transform: translate(-10px, -5px) skew(-3deg); }
+    100% { transform: translate(5px, 5px) skew(2deg); }
+}
+</style>
+</head>
+
+<body>
+
+<img src="firststatic.gif" class="background">
+
+<audio id="bg-audio" autoplay loop>
+    <source src="radio.wav" type="audio/wav">
+</audio>
+
+<div class="logo-container" id="logoContainer">
+    <img id="logo" class="logo" src="logo1.png">
+</div>
+
+<a href="page2.html" class="float-wrapper" id="appleWrap">
+    <img src="apple.gif" class="object apple">
+</a>
+
+<a href="page3.html" class="float-wrapper" id="chairWrap">
+    <img src="chair.gif" class="object chair">
+</a>
+
+<a href="page4.html" class="float-wrapper" id="bookWrap">
+    <img src="book.gif" class="object book">
+</a>
+
+<script>
+// AUDIO UNLOCK
+document.addEventListener("click", () => {
+    document.getElementById("bg-audio").play();
+});
+
+const objects = {
+    apple: document.getElementById("appleWrap"),
+    chair: document.getElementById("chairWrap"),
+    book: document.getElementById("bookWrap"),
+    logo: document.getElementById("logoContainer")
+};
+
+// DISTANCE CHECK
+function distance(a, b) {
+    return Math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2);
+}
+
+// GENERATE POSITION WITH SPACING
+function generatePositions() {
+    const minDistance = 300;
+    const positions = {};
+
+    function randomPos() {
+        return {
+            x: Math.random() * 80 + 10,
+            y: Math.random() * 80 + 10
+        };
+    }
+
+    let valid = false;
+
+    while (!valid) {
+        positions.apple = randomPos();
+        positions.chair = randomPos();
+        positions.book = randomPos();
+        positions.logo = randomPos();
+
+        valid = true;
+
+        const keys = Object.keys(positions);
+
+        for (let i = 0; i < keys.length; i++) {
+            for (let j = i + 1; j < keys.length; j++) {
+                if (distance(positions[keys[i]], positions[keys[j]]) < 20) {
+                    valid = false;
+                }
+            }
+        }
+
+        // EXTRA RULE: book far from chair
+        if (distance(positions.book, positions.chair) < 40) {
+            valid = false;
+        }
+    }
+
+    localStorage.setItem("positions", JSON.stringify(positions));
+    return positions;
+}
+
+// LOAD OR CREATE
+let saved = localStorage.getItem("positions");
+let positions = saved ? JSON.parse(saved) : generatePositions();
+
+// APPLY POSITIONS
+for (let key in positions) {
+    objects[key].style.left = positions[key].x + "vw";
+    objects[key].style.top = positions[key].y + "vh";
+}
+
+// LOGO LOOP
+const logos = ["logo1.png", "logo2.png", "logo3.png"];
+let currentLogo = 0;
+
+setInterval(() => {
+    currentLogo = (currentLogo + 1) % logos.length;
+    document.getElementById("logo").src = logos[currentLogo];
+}, 1000);
+
+// GLITCH
+function triggerGlitch() {
+    const logoContainer = document.getElementById("logoContainer");
+    const audio = document.getElementById("bg-audio");
+
+    logoContainer.classList.add("glitch");
+
+    let t = audio.currentTime;
+    let c = 0;
+
+    let i = setInterval(() => {
+        audio.currentTime = t;
+        c++;
+        if (c > 6) clearInterval(i);
+    }, 200);
+
+    setTimeout(() => {
+        logoContainer.classList.remove("glitch");
+        scheduleNextGlitch();
+    }, 500);
+}
+
+function scheduleNextGlitch() {
+    let t = (Math.random() * (360000 - 180000)) + 180000;
+    setTimeout(triggerGlitch, t);
+}
+
+scheduleNextGlitch();
+</script>
+
+</body>
+</html>
