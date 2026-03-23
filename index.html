@@ -24,7 +24,7 @@ body {
 /* LOGO */
 .logo-container {
     position: absolute;
-    top: 40%;
+    top: 42%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 5;
@@ -33,7 +33,6 @@ body {
 
 .logo {
     width: 1100px;
-    opacity: 1;
 }
 
 /* OBJECTS */
@@ -41,12 +40,7 @@ body {
     position: absolute;
     cursor: pointer;
     z-index: 2;
-    opacity: 1;
-    image-rendering: auto;
-    transition: transform 0.2s ease-out;
-
-    /* NEW: subtle shadow */
-    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.6));
+    transition: transform 8s linear; /* SLOW HOVER SCALE */
 }
 
 /* FLOAT */
@@ -57,7 +51,7 @@ body {
 
 @keyframes floatAnim {
     0% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
+    50% { transform: translateY(-18px); } /* slightly increased */
     100% { transform: translateY(0px); }
 }
 
@@ -129,22 +123,23 @@ document.addEventListener("click", () => {
 const objects = {
     apple: document.getElementById("appleWrap"),
     chair: document.getElementById("chairWrap"),
-    book: document.getElementById("bookWrap"),
-    logo: document.getElementById("logoContainer")
+    book: document.getElementById("bookWrap")
 };
 
-// FIXED POSITIONS (DESKTOP PRIORITY)
-objects.apple.style.left = "50vw";
-objects.apple.style.top = "75vh";
-objects.apple.style.transform = "translate(-50%, -50%)";
+// FIXED POSITIONS
+objects.apple.style.left = "62vw";
+objects.apple.style.top = "70vh";
 
-objects.chair.style.left = "80vw";
-objects.chair.style.top = "80vh";
-objects.chair.style.transform = "translate(-50%, -50%)";
+objects.chair.style.left = "78vw";
+objects.chair.style.top = "35vh";
 
-objects.book.style.left = "20vw";
-objects.book.style.top = "80vh";
-objects.book.style.transform = "translate(-50%, -50%)";
+objects.book.style.left = "18vw";
+objects.book.style.top = "65vh";
+
+// ROTATION (subtle floating feel)
+document.querySelector("#appleWrap .object").style.transform += " rotate(-6deg)";
+document.querySelector("#chairWrap .object").style.transform += " rotate(5deg)";
+document.querySelector("#bookWrap .object").style.transform += " rotate(-3deg)";
 
 // LOGO LOOP
 const logos = ["logo1.png", "logo2.png", "logo3.png"];
