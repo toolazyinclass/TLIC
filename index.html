@@ -40,7 +40,7 @@ body {
     position: absolute;
     cursor: pointer;
     z-index: 2;
-    transition: transform 8s linear; /* SLOW HOVER SCALE */
+    transition: transform 8s linear;
 }
 
 /* FLOAT */
@@ -51,7 +51,7 @@ body {
 
 @keyframes floatAnim {
     0% { transform: translateY(0px); }
-    50% { transform: translateY(-18px); } /* slightly increased */
+    50% { transform: translateY(-18px); }
     100% { transform: translateY(0px); }
 }
 
@@ -94,7 +94,7 @@ body {
 
 <img src="firststatic.gif" class="background">
 
-<audio id="bg-audio" autoplay loop>
+<audio id="bg-audio" autoplay loop muted>
     <source src="radio.wav" type="audio/wav">
 </audio>
 
@@ -115,11 +115,40 @@ body {
 </a>
 
 <script>
-// AUDIO UNLOCK
-document.addEventListener("click", () => {
-    document.getElementById("bg-audio").play();
-});
+const audio = document.getElementById("bg-audio");
 
+// Always attempt play
+audio.volume = 0;
+audio.play().catch(() => {});
+
+// Check if user already interacted before (across pages)
+let hasPlayed = sessionStorage.getItem("audioPlayed");
+
+// FIRST TIME → fade in
+if (!hasPlayed) {
+    document.addEventListener("click", () => {
+        audio.muted = false;
+
+        let vol = 0;
+        const fade = setInterval(() => {
+            vol += 0.05;
+            if (vol >= 1) {
+                vol = 1;
+                clearInterval(fade);
+            }
+            audio.volume = vol;
+        }, 150); // ~3 seconds total
+
+        sessionStorage.setItem("audioPlayed", "true");
+    }, { once: true });
+
+} else {
+    // NEXT PAGES → instant full volume
+    audio.muted = false;
+    audio.volume = 1;
+}
+
+// OBJECT REFERENCES
 const objects = {
     apple: document.getElementById("appleWrap"),
     chair: document.getElementById("chairWrap"),
@@ -136,7 +165,7 @@ objects.chair.style.top = "35vh";
 objects.book.style.left = "18vw";
 objects.book.style.top = "65vh";
 
-// ROTATION (subtle floating feel)
+// ROTATION
 document.querySelector("#appleWrap .object").style.transform += " rotate(-6deg)";
 document.querySelector("#chairWrap .object").style.transform += " rotate(5deg)";
 document.querySelector("#bookWrap .object").style.transform += " rotate(-3deg)";
@@ -153,18 +182,8 @@ setInterval(() => {
 // GLITCH
 function triggerGlitch() {
     const logoContainer = document.getElementById("logoContainer");
-    const audio = document.getElementById("bg-audio");
 
     logoContainer.classList.add("glitch");
-
-    let t = audio.currentTime;
-    let c = 0;
-
-    let i = setInterval(() => {
-        audio.currentTime = t;
-        c++;
-        if (c > 6) clearInterval(i);
-    }, 200);
 
     setTimeout(() => {
         logoContainer.classList.remove("glitch");
