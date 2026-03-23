@@ -11,7 +11,6 @@ body {
     background: black;
 }
 
-/* BACKGROUND */
 .background {
     position: fixed;
     width: 100vw;
@@ -20,42 +19,33 @@ body {
     z-index: -2;
 }
 
-/* EYES */
 .eye {
     position: absolute;
     width: 160px;
     cursor: pointer;
     z-index: 3;
-    transition: transform 0.2s ease-out;
 }
 
-/* FLOAT + TILT */
 .wrapper {
     position: absolute;
     animation: floatTilt 5s ease-in-out infinite;
 }
 
 @keyframes floatTilt {
-    0%   { transform: translateY(0px) rotate(-3deg); }
-    25%  { transform: translateY(-18px) rotate(2deg); }
-    50%  { transform: translateY(-10px) rotate(0deg); }
-    75%  { transform: translateY(-18px) rotate(-2deg); }
+    0% { transform: translateY(0px) rotate(-3deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
     100% { transform: translateY(0px) rotate(3deg); }
 }
 
-/* HOVER */
 .eye:hover {
     animation: shake 0.05s infinite;
     transform: scale(1.15);
 }
 
-/* SHAKE */
 @keyframes shake {
-    0% { transform: translate(1px, 1px) scale(1.15); }
-    25% { transform: translate(-2px, 2px) scale(1.15); }
-    50% { transform: translate(2px, -1px) scale(1.15); }
-    75% { transform: translate(-1px, -2px) scale(1.15); }
-    100% { transform: translate(1px, 2px) scale(1.15); }
+    0% { transform: translate(1px,1px) scale(1.15); }
+    50% { transform: translate(-2px,2px) scale(1.15); }
+    100% { transform: translate(1px,-1px) scale(1.15); }
 }
 </style>
 </head>
@@ -73,38 +63,16 @@ body {
 <script>
 const audio = document.getElementById("bg-audio");
 
-// RESTORE AUDIO STATE
+// RESTORE + PLAY (works because navigation click unlocked it)
 let savedTime = localStorage.getItem("audioTime");
-let wasPlaying = localStorage.getItem("audioPlaying");
 
 if (savedTime) {
     audio.currentTime = parseFloat(savedTime);
 }
 
-// TRY PLAY
-function tryPlay() {
-    audio.play().catch(() => {});
-}
+audio.play().catch(() => {});
 
-// If user already interacted before (from page1), this works
-if (wasPlaying === "true") {
-    tryPlay();
-}
-
-// fallback interaction
-document.addEventListener("click", tryPlay, { once: true });
-document.addEventListener("mousemove", tryPlay, { once: true });
-
-// SAVE STATE CONTINUOUSLY
-setInterval(() => {
-    localStorage.setItem("audioTime", audio.currentTime);
-    localStorage.setItem("audioPlaying", !audio.paused);
-}, 500);
-
-// RANDOM COUNT (7–10)
-let count = Math.floor(Math.random() * 4) + 7;
-
-// LOAD OR CREATE POSITIONS
+// RANDOM EYES (saved once)
 let saved = localStorage.getItem("eyePositions");
 let data;
 
@@ -112,6 +80,7 @@ if (saved) {
     data = JSON.parse(saved);
 } else {
     data = [];
+    let count = Math.floor(Math.random() * 4) + 7;
 
     for (let i = 0; i < count; i++) {
         data.push({
@@ -124,7 +93,6 @@ if (saved) {
     localStorage.setItem("eyePositions", JSON.stringify(data));
 }
 
-// CREATE ELEMENTS
 const container = document.getElementById("container");
 
 data.forEach((eye) => {
