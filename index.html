@@ -24,14 +24,16 @@ body {
 /* LOGO */
 .logo-container {
     position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 5;
     pointer-events: none;
 }
 
 .logo {
     width: 1100px;
-    opacity: 0.9;
-    mix-blend-mode: screen;
+    opacity: 1;
 }
 
 /* OBJECTS */
@@ -39,9 +41,9 @@ body {
     position: absolute;
     cursor: pointer;
     z-index: 2;
-    opacity: 0.85;
-    mix-blend-mode: screen;
-    filter: contrast(110%) brightness(90%);
+    opacity: 1;
+    filter: none;
+    image-rendering: auto;
     transition: transform 0.2s ease-out;
 }
 
@@ -66,7 +68,6 @@ body {
 .object:hover {
     animation: shake 0.05s infinite;
     transform: scale(1.15);
-    transition: transform 5s linear;
 }
 
 /* SHAKE */
@@ -130,62 +131,18 @@ const objects = {
     logo: document.getElementById("logoContainer")
 };
 
-// DISTANCE CHECK
-function distance(a, b) {
-    return Math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2);
-}
+// FIXED POSITIONS (DESKTOP PRIORITY)
+objects.apple.style.left = "50vw";
+objects.apple.style.top = "75vh";
+objects.apple.style.transform = "translate(-50%, -50%)";
 
-// GENERATE POSITION WITH SPACING
-function generatePositions() {
-    const minDistance = 300;
-    const positions = {};
+objects.chair.style.left = "80vw";
+objects.chair.style.top = "80vh";
+objects.chair.style.transform = "translate(-50%, -50%)";
 
-    function randomPos() {
-        return {
-            x: Math.random() * 80 + 10,
-            y: Math.random() * 80 + 10
-        };
-    }
-
-    let valid = false;
-
-    while (!valid) {
-        positions.apple = randomPos();
-        positions.chair = randomPos();
-        positions.book = randomPos();
-        positions.logo = randomPos();
-
-        valid = true;
-
-        const keys = Object.keys(positions);
-
-        for (let i = 0; i < keys.length; i++) {
-            for (let j = i + 1; j < keys.length; j++) {
-                if (distance(positions[keys[i]], positions[keys[j]]) < 20) {
-                    valid = false;
-                }
-            }
-        }
-
-        // EXTRA RULE: book far from chair
-        if (distance(positions.book, positions.chair) < 40) {
-            valid = false;
-        }
-    }
-
-    localStorage.setItem("positions", JSON.stringify(positions));
-    return positions;
-}
-
-// LOAD OR CREATE
-let saved = localStorage.getItem("positions");
-let positions = saved ? JSON.parse(saved) : generatePositions();
-
-// APPLY POSITIONS
-for (let key in positions) {
-    objects[key].style.left = positions[key].x + "vw";
-    objects[key].style.top = positions[key].y + "vh";
-}
+objects.book.style.left = "20vw";
+objects.book.style.top = "80vh";
+objects.book.style.transform = "translate(-50%, -50%)";
 
 // LOGO LOOP
 const logos = ["logo1.png", "logo2.png", "logo3.png"];
