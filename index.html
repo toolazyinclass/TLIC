@@ -27,19 +27,31 @@ body {
     top: 42%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 5;
+    z-index: 3;
     pointer-events: none;
 }
 
 .logo {
-    width: 1100px;
+    width: min(1100px, 80vw);
+}
+
+/* SAFE ZONE */
+.safe-zone {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    height: 500px;
+    pointer-events: none;
+    z-index: 4;
 }
 
 /* OBJECTS */
 .object {
     position: absolute;
     cursor: pointer;
-    z-index: 2;
+    z-index: 6;
     transition: transform 0.2s ease-out;
 }
 
@@ -47,6 +59,7 @@ body {
 .float-wrapper {
     position: absolute;
     animation: floatTilt 5s ease-in-out infinite;
+    z-index: 6;
 }
 
 @keyframes floatTilt {
@@ -104,6 +117,8 @@ body {
     <img id="logo" class="logo" src="logo1.png">
 </div>
 
+<div class="safe-zone"></div>
+
 <a href="page2.html" class="float-wrapper" id="appleWrap">
     <img src="apple.gif" class="object apple">
 </a>
@@ -117,13 +132,13 @@ body {
 </a>
 
 <script>
-// AUDIO (click to play)
+// AUDIO
 const audio = document.getElementById("bg-audio");
 document.addEventListener("click", () => {
     audio.play();
 });
 
-// POSITIONS (fixed, non-random, spaced)
+// POSITIONS
 document.getElementById("appleWrap").style.left = "62vw";
 document.getElementById("appleWrap").style.top = "70vh";
 
@@ -142,7 +157,7 @@ setInterval(() => {
     document.getElementById("logo").src = logos[currentLogo];
 }, 1000);
 
-// GLITCH FUNCTION
+// GLITCH
 function triggerGlitch() {
     const logoContainer = document.getElementById("logoContainer");
 
@@ -171,9 +186,9 @@ function triggerGlitch() {
     }, 700);
 }
 
-// RANDOM GLITCH TIMING (30s–3min)
+// RANDOM 30s → 60s
 function scheduleNextGlitch() {
-    let time = (Math.random() * (180000 - 30000)) + 30000;
+    let time = (Math.random() * (60000 - 30000)) + 30000;
     setTimeout(triggerGlitch, time);
 }
 
