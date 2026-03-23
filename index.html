@@ -40,19 +40,21 @@ body {
     position: absolute;
     cursor: pointer;
     z-index: 2;
-    transition: transform 8s linear;
+    transition: transform 0.2s ease-out;
 }
 
-/* FLOAT */
+/* FLOAT + TILT */
 .float-wrapper {
     position: absolute;
-    animation: floatAnim 4s ease-in-out infinite;
+    animation: floatTilt 5s ease-in-out infinite;
 }
 
-@keyframes floatAnim {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-18px); }
-    100% { transform: translateY(0px); }
+@keyframes floatTilt {
+    0%   { transform: translateY(0px) rotate(-3deg); }
+    25%  { transform: translateY(-18px) rotate(2deg); }
+    50%  { transform: translateY(-10px) rotate(0deg); }
+    75%  { transform: translateY(-18px) rotate(-2deg); }
+    100% { transform: translateY(0px) rotate(3deg); }
 }
 
 /* SIZES */
@@ -94,7 +96,7 @@ body {
 
 <img src="firststatic.gif" class="background">
 
-<audio id="bg-audio" autoplay loop muted>
+<audio id="bg-audio" loop>
     <source src="radio.wav" type="audio/wav">
 </audio>
 
@@ -115,60 +117,20 @@ body {
 </a>
 
 <script>
-const audio = document.getElementById("bg-audio");
-
-// Always attempt play
-audio.volume = 0;
-audio.play().catch(() => {});
-
-// Check if user already interacted before (across pages)
-let hasPlayed = sessionStorage.getItem("audioPlayed");
-
-// FIRST TIME → fade in
-if (!hasPlayed) {
-    document.addEventListener("click", () => {
-        audio.muted = false;
-
-        let vol = 0;
-        const fade = setInterval(() => {
-            vol += 0.05;
-            if (vol >= 1) {
-                vol = 1;
-                clearInterval(fade);
-            }
-            audio.volume = vol;
-        }, 150); // ~3 seconds total
-
-        sessionStorage.setItem("audioPlayed", "true");
-    }, { once: true });
-
-} else {
-    // NEXT PAGES → instant full volume
-    audio.muted = false;
-    audio.volume = 1;
-}
-
-// OBJECT REFERENCES
-const objects = {
-    apple: document.getElementById("appleWrap"),
-    chair: document.getElementById("chairWrap"),
-    book: document.getElementById("bookWrap")
-};
+// ORIGINAL AUDIO BEHAVIOR (click to play)
+document.addEventListener("click", () => {
+    document.getElementById("bg-audio").play();
+});
 
 // FIXED POSITIONS
-objects.apple.style.left = "62vw";
-objects.apple.style.top = "70vh";
+document.getElementById("appleWrap").style.left = "62vw";
+document.getElementById("appleWrap").style.top = "70vh";
 
-objects.chair.style.left = "78vw";
-objects.chair.style.top = "35vh";
+document.getElementById("chairWrap").style.left = "78vw";
+document.getElementById("chairWrap").style.top = "35vh";
 
-objects.book.style.left = "18vw";
-objects.book.style.top = "65vh";
-
-// ROTATION
-document.querySelector("#appleWrap .object").style.transform += " rotate(-6deg)";
-document.querySelector("#chairWrap .object").style.transform += " rotate(5deg)";
-document.querySelector("#bookWrap .object").style.transform += " rotate(-3deg)";
+document.getElementById("bookWrap").style.left = "18vw";
+document.getElementById("bookWrap").style.top = "65vh";
 
 // LOGO LOOP
 const logos = ["logo1.png", "logo2.png", "logo3.png"];
