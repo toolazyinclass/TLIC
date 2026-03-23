@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Too Lazy, In Class</title>
+<meta name="description" content="Bored in class? Click here!">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- BACKGROUND -->
+<img src="assets/images/firststatic.gif" class="background">
+
+<!-- AUDIO -->
+<audio id="bg-audio" autoplay loop>
+    <source src="assets/audio/radio.wav" type="audio/wav">
+</audio>
+
+<!-- LOGO -->
+<div class="logo-container" id="logoContainer">
+    <img id="logo" class="logo" src="assets/images/logo1.png">
+</div>
+
+<!-- APPLE -->
+<a href="page2.html">
+    <img src="assets/images/apple.gif" class="object apple float">
+</a>
+
+<!-- CHAIR -->
+<a href="page3.html">
+    <img src="assets/images/chair.gif" class="object chair float" id="chair">
+</a>
+
+<!-- BOOK -->
+<a href="page4.html">
+    <img src="assets/images/book.gif" class="object book float" id="book">
+</a>
+
+<script>
+// AUDIO UNLOCK (required for autoplay in some browsers)
+document.addEventListener("click", () => {
+    document.getElementById("bg-audio").play();
+});
+
+// POSITION CHAIR
+const chair = document.getElementById("chair");
+chair.style.left = "55%";
+chair.style.top = "65%";
+
+// RANDOM BOOK OFFSET
+const book = document.getElementById("book");
+function placeBook() {
+    let offsetX = (Math.random() * 200) - 100;
+    let offsetY = (Math.random() * 150) - 75;
+
+    book.style.left = `calc(55% + ${offsetX}px)`;
+    book.style.top = `calc(65% + ${offsetY}px)`;
+}
+placeBook();
+
+// LOGO FAKE GIF LOOP
+const logos = [
+    "assets/images/logo1.png",
+    "assets/images/logo2.png",
+    "assets/images/logo3.png"
+];
+
+let currentLogo = 0;
+const logoEl = document.getElementById("logo");
+
+setInterval(() => {
+    currentLogo = (currentLogo + 1) % logos.length;
+    logoEl.src = logos[currentLogo];
+}, 1000);
+
+// GLITCH FUNCTION (logo + audio sync)
+function triggerGlitch() {
+    const logoContainer = document.getElementById("logoContainer");
+    const audio = document.getElementById("bg-audio");
+
+    const positions = [
+        "top:0; left:0;",
+        "top:0; right:0;",
+        "bottom:0; left:0;",
+        "bottom:0; right:0;"
+    ];
+
+    // TELEPORT + VISUAL GLITCH
+    logoContainer.style = "position:absolute;" + positions[Math.floor(Math.random()*4)];
+    logoContainer.classList.add("glitch");
+
+    // AUDIO STUTTER (0.2s repeat)
+    let currentTime = audio.currentTime;
+    let count = 0;
+
+    let glitchInterval = setInterval(() => {
+        audio.currentTime = currentTime;
+        count++;
+        if (count > 6) clearInterval(glitchInterval);
+    }, 200);
+
+    // RESET AFTER 0.5s
+    setTimeout(() => {
+        logoContainer.classList.remove("glitch");
+        logoContainer.style = "top:10%; left:50%; transform:translateX(-50%);";
+
+        scheduleNextGlitch(); // schedule next random glitch
+    }, 500);
+}
+
+// RANDOM TIMER (3–6 minutes)
+function scheduleNextGlitch() {
+    let randomTime = (Math.random() * (360000 - 180000)) + 180000;
+    setTimeout(triggerGlitch, randomTime);
+}
+
+// START LOOP
+scheduleNextGlitch();
+
+</script>
+
+</body>
+</html>
