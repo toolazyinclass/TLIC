@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Too Lazy, In Class</title>
-<meta name="description" content="Bored in class? Click here!">
 
 <style>
 body {
@@ -12,7 +11,6 @@ body {
     background: black;
 }
 
-/* BACKGROUND */
 .background {
     position: fixed;
     width: 100vw;
@@ -21,7 +19,6 @@ body {
     z-index: -2;
 }
 
-/* LOGO */
 .logo-container {
     position: absolute;
     top: 42%;
@@ -35,7 +32,6 @@ body {
     width: min(1100px, 80vw);
 }
 
-/* SAFE ZONE */
 .safe-zone {
     position: absolute;
     top: 42%;
@@ -47,60 +43,32 @@ body {
     z-index: 4;
 }
 
-/* OBJECTS */
 .object {
     position: absolute;
     cursor: pointer;
     z-index: 6;
-    transition: transform 0.2s ease-out;
 }
 
-/* FLOAT + TILT */
 .float-wrapper {
     position: absolute;
     animation: floatTilt 5s ease-in-out infinite;
-    z-index: 6;
 }
 
 @keyframes floatTilt {
-    0%   { transform: translateY(0px) rotate(-3deg); }
-    25%  { transform: translateY(-18px) rotate(2deg); }
-    50%  { transform: translateY(-10px) rotate(0deg); }
-    75%  { transform: translateY(-18px) rotate(-2deg); }
+    0% { transform: translateY(0px) rotate(-3deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
     100% { transform: translateY(0px) rotate(3deg); }
 }
 
-/* SIZES */
-.chair { width: 250px; }
-.book { width: 120px; }
-.apple { width: 180px; }
-
-/* HOVER */
 .object:hover {
     animation: shake 0.05s infinite;
     transform: scale(1.15);
 }
 
-/* SHAKE */
 @keyframes shake {
-    0% { transform: translate(1px, 1px) scale(1.15); }
-    25% { transform: translate(-2px, 2px) scale(1.15); }
-    50% { transform: translate(2px, -1px) scale(1.15); }
-    75% { transform: translate(-1px, -2px) scale(1.15); }
-    100% { transform: translate(1px, 2px) scale(1.15); }
-}
-
-/* GLITCH */
-.glitch {
-    animation: glitchAnim 0.1s infinite;
-}
-
-@keyframes glitchAnim {
-    0% { transform: translate(10px, -10px) skew(5deg); }
-    25% { transform: translate(-15px, 5px) skew(-5deg); }
-    50% { transform: translate(10px, 10px) skew(3deg); }
-    75% { transform: translate(-10px, -5px) skew(-3deg); }
-    100% { transform: translate(5px, 5px) skew(2deg); }
+    0% { transform: translate(1px,1px) scale(1.15); }
+    50% { transform: translate(-2px,2px) scale(1.15); }
+    100% { transform: translate(1px,-1px) scale(1.15); }
 }
 </style>
 </head>
@@ -113,91 +81,41 @@ body {
     <source src="radio.wav" type="audio/wav">
 </audio>
 
-<div class="logo-container" id="logoContainer">
-    <img id="logo" class="logo" src="logo1.png">
+<div class="logo-container">
+    <img class="logo" src="logo1.png">
 </div>
 
 <div class="safe-zone"></div>
 
-<a href="page2.html" class="float-wrapper" id="appleWrap">
-    <img src="apple.gif" class="object apple">
+<!-- CLICK NAVIGATION FIX -->
+<a href="page2.html" onclick="goToPage(event, 'page2.html')" class="float-wrapper" style="left:62vw; top:70vh;">
+    <img src="apple.gif" class="object" style="width:180px;">
 </a>
 
-<a href="page3.html" class="float-wrapper" id="chairWrap">
-    <img src="chair.gif" class="object chair">
+<a href="page3.html" class="float-wrapper" style="left:78vw; top:35vh;">
+    <img src="chair.gif" class="object" style="width:250px;">
 </a>
 
-<a href="page4.html" class="float-wrapper" id="bookWrap">
-    <img src="book.gif" class="object book">
+<a href="page4.html" class="float-wrapper" style="left:18vw; top:65vh;">
+    <img src="book.gif" class="object" style="width:120px;">
 </a>
 
 <script>
-// AUDIO
 const audio = document.getElementById("bg-audio");
+
 document.addEventListener("click", () => {
     audio.play();
-});
+}, { once: true });
 
-setInterval(() => {
+// SAVE + NAVIGATE
+function goToPage(e, url) {
+    e.preventDefault();
+
     localStorage.setItem("audioTime", audio.currentTime);
-    localStorage.setItem("audioPlaying", !audio.paused);
-}, 500);
+    localStorage.setItem("audioPlaying", "true");
 
-// POSITIONS
-document.getElementById("appleWrap").style.left = "62vw";
-document.getElementById("appleWrap").style.top = "70vh";
-
-document.getElementById("chairWrap").style.left = "78vw";
-document.getElementById("chairWrap").style.top = "35vh";
-
-document.getElementById("bookWrap").style.left = "18vw";
-document.getElementById("bookWrap").style.top = "65vh";
-
-// LOGO LOOP
-const logos = ["logo1.png", "logo2.png", "logo3.png"];
-let currentLogo = 0;
-
-setInterval(() => {
-    currentLogo = (currentLogo + 1) % logos.length;
-    document.getElementById("logo").src = logos[currentLogo];
-}, 1000);
-
-// GLITCH
-function triggerGlitch() {
-    const logoContainer = document.getElementById("logoContainer");
-
-    logoContainer.classList.add("glitch");
-
-    let originalTime = audio.currentTime;
-    let originalRate = audio.playbackRate;
-    let count = 0;
-
-    audio.playbackRate = 0.85;
-
-    let glitchInterval = setInterval(() => {
-        audio.currentTime = originalTime;
-        audio.volume = 0.6 + Math.random() * 0.4;
-
-        count++;
-        if (count > 8) clearInterval(glitchInterval);
-    }, 120);
-
-    setTimeout(() => {
-        logoContainer.classList.remove("glitch");
-        audio.playbackRate = originalRate;
-        audio.volume = 1;
-
-        scheduleNextGlitch();
-    }, 700);
+    window.location.href = url;
 }
-
-// RANDOM 30s → 60s
-function scheduleNextGlitch() {
-    let time = (Math.random() * (60000 - 30000)) + 30000;
-    setTimeout(triggerGlitch, time);
-}
-
-scheduleNextGlitch();
 </script>
 
 </body>
