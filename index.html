@@ -138,6 +138,11 @@ document.addEventListener("click", () => {
     audio.play();
 });
 
+setInterval(() => {
+    localStorage.setItem("audioTime", audio.currentTime);
+    localStorage.setItem("audioPlaying", !audio.paused);
+}, 500);
+
 // POSITIONS
 document.getElementById("appleWrap").style.left = "62vw";
 document.getElementById("appleWrap").style.top = "70vh";
