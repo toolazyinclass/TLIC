@@ -21,6 +21,17 @@ body {
     z-index: -2;
 }
 
+/* GLOBAL NOISE OVERLAY */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    z-index: 10;
+    background-image: url("https://www.transparenttextures.com/patterns/asfalt-light.png");
+}
+
 /* LOGO */
 .logo-container {
     position: absolute;
@@ -35,11 +46,21 @@ body {
     width: 1100px;
 }
 
-/* OBJECTS */
+/* OBJECTS — DEGRADED LOOK */
 .object {
     position: absolute;
     cursor: pointer;
     z-index: 2;
+
+    /* simulate compression / analog feel */
+    filter: 
+        contrast(85%)
+        brightness(95%)
+        saturate(80%)
+        blur(0.3px);
+
+    image-rendering: pixelated;
+
     transition: transform 0.2s ease-out;
 }
 
@@ -117,14 +138,13 @@ body {
 </a>
 
 <script>
-// AUDIO (click to start)
+// AUDIO (click to play)
 const audio = document.getElementById("bg-audio");
-
 document.addEventListener("click", () => {
     audio.play();
 });
 
-// FIXED POSITIONS
+// POSITIONS
 document.getElementById("appleWrap").style.left = "62vw";
 document.getElementById("appleWrap").style.top = "70vh";
 
@@ -168,17 +188,16 @@ function triggerGlitch() {
         audio.playbackRate = originalRate;
         audio.volume = 1;
 
-        scheduleNextGlitch(); // schedule next after this finishes
+        scheduleNextGlitch();
     }, 700);
 }
 
-// RANDOM TIMER (30s → 3min)
+// RANDOM GLITCH TIMING (30s–3min)
 function scheduleNextGlitch() {
     let time = (Math.random() * (180000 - 30000)) + 30000;
     setTimeout(triggerGlitch, time);
 }
 
-// START LOOP
 scheduleNextGlitch();
 </script>
 
