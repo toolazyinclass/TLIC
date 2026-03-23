@@ -65,16 +65,28 @@ body {
 <img src="background2.gif" class="background">
 
 <!-- AUDIO -->
-<audio id="bg-audio" autoplay loop>
+<audio id="bg-audio" loop>
     <source src="song2.wav" type="audio/wav">
 </audio>
 
 <div id="container"></div>
 
 <script>
-// FORCE PLAY (for browser compatibility)
+// AUDIO FIX
 const audio = document.getElementById("bg-audio");
+
+// try immediate play
 audio.play().catch(() => {});
+
+// fallback interaction triggers
+const playAudio = () => {
+    audio.play();
+    document.removeEventListener("click", playAudio);
+    document.removeEventListener("mousemove", playAudio);
+};
+
+document.addEventListener("click", playAudio);
+document.addEventListener("mousemove", playAudio);
 
 // RANDOM COUNT (7–10)
 let count = Math.floor(Math.random() * 4) + 7;
@@ -100,6 +112,8 @@ if (saved) {
 }
 
 // CREATE ELEMENTS
+const container = document.getElementById("container");
+
 data.forEach((eye) => {
     let wrap = document.createElement("div");
     wrap.className = "wrapper";
