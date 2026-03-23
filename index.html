@@ -117,9 +117,11 @@ body {
 </a>
 
 <script>
-// ORIGINAL AUDIO BEHAVIOR (click to play)
+// ORIGINAL AUDIO BEHAVIOR
+const audio = document.getElementById("bg-audio");
+
 document.addEventListener("click", () => {
-    document.getElementById("bg-audio").play();
+    audio.play();
 });
 
 // FIXED POSITIONS
@@ -141,24 +143,41 @@ setInterval(() => {
     document.getElementById("logo").src = logos[currentLogo];
 }, 1000);
 
-// GLITCH
+// ENHANCED GLITCH (15s + ominous audio)
 function triggerGlitch() {
     const logoContainer = document.getElementById("logoContainer");
 
     logoContainer.classList.add("glitch");
 
+    let originalTime = audio.currentTime;
+    let originalRate = audio.playbackRate;
+    let count = 0;
+
+    // lower pitch slightly
+    audio.playbackRate = 0.85;
+
+    let glitchInterval = setInterval(() => {
+        audio.currentTime = originalTime;
+
+        // subtle volume wobble
+        audio.volume = 0.6 + Math.random() * 0.4;
+
+        count++;
+        if (count > 8) clearInterval(glitchInterval);
+    }, 120);
+
     setTimeout(() => {
         logoContainer.classList.remove("glitch");
-        scheduleNextGlitch();
-    }, 500);
+
+        // restore normal audio
+        audio.playbackRate = originalRate;
+        audio.volume = 1;
+
+    }, 700);
 }
 
-function scheduleNextGlitch() {
-    let t = (Math.random() * (360000 - 180000)) + 180000;
-    setTimeout(triggerGlitch, t);
-}
-
-scheduleNextGlitch();
+// FIXED 15 SECOND INTERVAL
+setInterval(triggerGlitch, 15000);
 </script>
 
 </body>
