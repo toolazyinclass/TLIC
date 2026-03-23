@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Page 2</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+}
+
+/* BACKGROUND */
+.background {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -2;
+}
+
+/* EYES */
+.eye {
+    position: absolute;
+    width: 160px;
+    cursor: pointer;
+    z-index: 3;
+    transition: transform 0.2s ease-out;
+}
+
+/* FLOAT + TILT */
+.wrapper {
+    position: absolute;
+    animation: floatTilt 5s ease-in-out infinite;
+}
+
+@keyframes floatTilt {
+    0%   { transform: translateY(0px) rotate(-3deg); }
+    25%  { transform: translateY(-18px) rotate(2deg); }
+    50%  { transform: translateY(-10px) rotate(0deg); }
+    75%  { transform: translateY(-18px) rotate(-2deg); }
+    100% { transform: translateY(0px) rotate(3deg); }
+}
+
+/* HOVER */
+.eye:hover {
+    animation: shake 0.05s infinite;
+    transform: scale(1.15);
+}
+
+/* SHAKE */
+@keyframes shake {
+    0% { transform: translate(1px, 1px) scale(1.15); }
+    25% { transform: translate(-2px, 2px) scale(1.15); }
+    50% { transform: translate(2px, -1px) scale(1.15); }
+    75% { transform: translate(-1px, -2px) scale(1.15); }
+    100% { transform: translate(1px, 2px) scale(1.15); }
+}
+</style>
+</head>
+
+<body>
+
+<img src="background2.gif" class="background">
+
+<div id="container"></div>
+
+<script>
+const container = document.getElementById("container");
+
+// RANDOM COUNT (7–10)
+let count = Math.floor(Math.random() * 4) + 7;
+
+// LOAD OR CREATE POSITIONS
+let saved = localStorage.getItem("eyePositions");
+let data;
+
+if (saved) {
+    data = JSON.parse(saved);
+} else {
+    data = [];
+
+    for (let i = 0; i < count; i++) {
+        data.push({
+            x: Math.random() * 90,
+            y: Math.random() * 90,
+            type: Math.random() > 0.5 ? "eye1.gif" : "eye2.gif"
+        });
+    }
+
+    localStorage.setItem("eyePositions", JSON.stringify(data));
+}
+
+// CREATE ELEMENTS
+data.forEach((eye) => {
+    let wrap = document.createElement("div");
+    wrap.className = "wrapper";
+    wrap.style.left = eye.x + "vw";
+    wrap.style.top = eye.y + "vh";
+
+    let img = document.createElement("img");
+    img.src = eye.type;
+    img.className = "eye";
+
+    wrap.appendChild(img);
+    container.appendChild(wrap);
+});
+</script>
+
+</body>
+</html>
