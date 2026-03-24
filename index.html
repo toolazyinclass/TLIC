@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>too lazy, in class</title>
-<meta name="description" content="our artist page. taste the waves.">
+<meta name="description" content="an artist page... make that an excellent artist page...">
 
 <link rel="icon" href="beach.gif">
 
@@ -27,10 +27,6 @@ body {
   justify-content: center;
 }
 
-.cd-wrap {
-  position: relative;
-}
-
 /* CD */
 #cd {
   width: 220px;
@@ -42,35 +38,25 @@ body {
 
 /* FLOAT */
 @keyframes float {
-  0%   { transform: translateY(0px) rotate(0deg); }
-  50%  { transform: translateY(-18px) rotate(1deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-18px); }
+  100% { transform: translateY(0px); }
 }
 
-/* HOVER = stop float + shake */
+/* HOVER */
 @media (hover: hover) {
   #cd:hover {
-    animation: shake 0.08s infinite;
+    animation: none;
     transform: scale(1.28);
   }
 }
 
-/* MOBILE */
 #cd:active {
-  animation: shake 0.08s infinite;
+  animation: none;
   transform: scale(1.2);
 }
 
-/* SHAKE */
-@keyframes shake {
-  0%   { transform: translate(0px, 0px) rotate(0deg) scale(1.28); }
-  25%  { transform: translate(2px, -2px) rotate(1deg) scale(1.28); }
-  50%  { transform: translate(-2px, 2px) rotate(-1deg) scale(1.28); }
-  75%  { transform: translate(2px, 2px) rotate(1deg) scale(1.28); }
-  100% { transform: translate(-2px, -2px) rotate(-1deg) scale(1.28); }
-}
-
-/* Mobile size */
+/* Mobile */
 @media (max-width: 600px) {
   #cd {
     width: 180px;
@@ -81,10 +67,7 @@ body {
 
 <body>
 
-<div class="cd-wrap">
-  <img id="cd" src="cd.gif" alt="CD Button">
-</div>
-
+<img id="cd" src="cd.gif" alt="CD Button">
 <audio id="bgAudio" src="beach.wav" loop></audio>
 
 <script>
@@ -101,48 +84,46 @@ document.addEventListener("click", () => {
   startGlitchLoop();
 }, { once: true });
 
-/* VISUAL + AUDIO GLITCH (every 15s) */
+/* Loop every 15s */
 function startGlitchLoop() {
-  setInterval(() => {
-    triggerGlitch();
-  }, 15000);
+  setInterval(triggerGlitch, 15000);
 }
 
+/* CLEAN GLITCH SYSTEM */
 function triggerGlitch() {
   if (audio.paused) return;
 
   const baseTime = audio.currentTime;
 
-  // low pitch
+  // low pitch glitch
   audio.playbackRate = 0.6;
 
-  let count = 0;
-  let repeats = 12;
+  let duration = 1500; // glitch duration
+  let intervalTime = 70;
 
-  // visual glitch loop
-  const visual = setInterval(() => {
-    let x = (Math.random() - 0.5) * 40;   // small movement
-    let y = (Math.random() - 0.5) * 40;
-    let scale = 1 + (Math.random() * 0.3 - 0.15);
+  const glitchInterval = setInterval(() => {
+    // small random offsets near center
+    let x = (Math.random() - 0.5) * 30;
+    let y = (Math.random() - 0.5) * 30;
+
+    // size jitter
+    let scale = 0.85 + Math.random() * 0.4;
 
     cd.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
 
-    count++;
-    if (count >= repeats) {
-      clearInterval(visual);
-      cd.style.transform = ""; // reset
-    }
-  }, 60);
+    // audio stutter (same slice)
+    audio.currentTime = baseTime + (Math.random() * 0.025);
 
-  // audio stutter (same sound slice)
-  const stutter = setInterval(() => {
-    audio.currentTime = baseTime + (Math.random() * 0.03);
-  }, 80);
+  }, intervalTime);
 
   setTimeout(() => {
-    clearInterval(stutter);
-    audio.playbackRate = 1; // back to normal
-  }, 1200);
+    clearInterval(glitchInterval);
+
+    // reset visuals cleanly
+    cd.style.transform = "";
+    audio.playbackRate = 1;
+
+  }, duration);
 }
 </script>
 
