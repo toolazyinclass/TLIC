@@ -28,10 +28,10 @@ body {
 }
 
 .cd-wrap {
-  isolation: isolate;
   position: relative;
 }
 
+/* CD */
 #cd {
   width: 220px;
   max-width: 60vw;
@@ -40,28 +40,28 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
-/* Floating */
+/* FLOAT */
 @keyframes float {
   0%   { transform: translateY(0px) rotate(0deg); }
-  50%  { transform: translateY(-10px) rotate(1deg); }
+  50%  { transform: translateY(-18px) rotate(1deg); }
   100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* Hover */
+/* HOVER = stop float + shake */
 @media (hover: hover) {
   #cd:hover {
-    transform: scale(1.28);
     animation: shake 0.08s infinite;
+    transform: scale(1.28);
   }
 }
 
-/* Mobile */
+/* MOBILE */
 #cd:active {
-  transform: scale(1.2);
   animation: shake 0.08s infinite;
+  transform: scale(1.2);
 }
 
-/* Shake */
+/* SHAKE */
 @keyframes shake {
   0%   { transform: translate(0px, 0px) rotate(0deg) scale(1.28); }
   25%  { transform: translate(2px, -2px) rotate(1deg) scale(1.28); }
@@ -70,20 +70,7 @@ body {
   100% { transform: translate(-2px, -2px) rotate(-1deg) scale(1.28); }
 }
 
-/* GLITCH MOVEMENT (slower + readable) */
-.glitching {
-  animation: chaos 0.25s ease-in-out infinite !important;
-}
-
-@keyframes chaos {
-  0%   { transform: translate(0,0) scale(1.2); }
-  25%  { transform: translate(25vw, -20vh) scale(1.3) rotate(10deg); }
-  50%  { transform: translate(-30vw, 25vh) scale(1.15) rotate(-12deg); }
-  75%  { transform: translate(20vw, 30vh) scale(1.35) rotate(8deg); }
-  100% { transform: translate(0,0) scale(1.2); }
-}
-
-/* Mobile sizing */
+/* Mobile size */
 @media (max-width: 600px) {
   #cd {
     width: 180px;
@@ -104,56 +91,58 @@ body {
 const cd = document.getElementById("cd");
 const audio = document.getElementById("bgAudio");
 
-// Redirect
 cd.addEventListener("click", () => {
   window.location.href = "#";
 });
 
-// Start audio (required for mobile)
+/* Start audio */
 document.addEventListener("click", () => {
   audio.play();
-  scheduleGlitch();
+  startGlitchLoop();
 }, { once: true });
 
-/* GLITCH AUDIO (stable + resumes properly) */
-function glitchAudio() {
+/* VISUAL + AUDIO GLITCH (every 15s) */
+function startGlitchLoop() {
+  setInterval(() => {
+    triggerGlitch();
+  }, 15000);
+}
+
+function triggerGlitch() {
   if (audio.paused) return;
 
-  // Save position
-  const currentTime = audio.currentTime;
+  const baseTime = audio.currentTime;
 
-  // Apply high pitch
-  audio.playbackRate = 1.6;
+  // low pitch
+  audio.playbackRate = 0.6;
 
-  // Stutter effect (without breaking playback)
-  let repeats = 8;
   let count = 0;
+  let repeats = 12;
 
-  const stutter = setInterval(() => {
-    audio.currentTime = currentTime + (Math.random() * 0.05);
+  // visual glitch loop
+  const visual = setInterval(() => {
+    let x = (Math.random() - 0.5) * 40;   // small movement
+    let y = (Math.random() - 0.5) * 40;
+    let scale = 1 + (Math.random() * 0.3 - 0.15);
+
+    cd.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+
     count++;
     if (count >= repeats) {
-      clearInterval(stutter);
+      clearInterval(visual);
+      cd.style.transform = ""; // reset
     }
   }, 60);
 
-  // Visual glitch
-  cd.classList.add("glitching");
+  // audio stutter (same sound slice)
+  const stutter = setInterval(() => {
+    audio.currentTime = baseTime + (Math.random() * 0.03);
+  }, 80);
 
   setTimeout(() => {
-    audio.playbackRate = 1; // reset pitch cleanly
-    cd.classList.remove("glitching");
-  }, 1200 + Math.random() * 800); // ~1–2 sec
-}
-
-/* Random 30–60 sec */
-function scheduleGlitch() {
-  let time = Math.random() * (60000 - 30000) + 30000;
-
-  setTimeout(() => {
-    glitchAudio();
-    scheduleGlitch();
-  }, time);
+    clearInterval(stutter);
+    audio.playbackRate = 1; // back to normal
+  }, 1200);
 }
 </script>
 
