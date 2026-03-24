@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>too lazy, in class</title>
 <meta name="description" content="an artist page... make that an excellent artist page...">
@@ -16,12 +16,23 @@
   box-sizing: border-box;
 }
 
-body {
-  height: 100vh;
-  width: 100vw;
-  background: url("beach.gif") no-repeat center center fixed;
-  background-size: cover;
+html, body {
+  height: 100%;
+  width: 100%;
   overflow: hidden;
+  background: #000;
+}
+
+/* Fixed background div — kills the mobile white-border bug */
+#bg {
+  position: fixed;
+  inset: -20px;
+  background: url("beach.gif") no-repeat center center;
+  background-size: cover;
+  z-index: 0;
+}
+
+body {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,8 +43,9 @@ body {
   width: 220px;
   max-width: 60vw;
   cursor: pointer;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   animation: float 4s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
 }
 
 /* FLOAT */
@@ -67,61 +79,95 @@ body {
 
 <body>
 
+<div id="bg"></div>
 <img id="cd" src="cd.gif" alt="CD Button">
 <audio id="bgAudio" src="beach.wav" loop></audio>
 
 <script>
-const cd = document.getElementById("cd");
+const cd    = document.getElementById("cd");
 const audio = document.getElementById("bgAudio");
 
 cd.addEventListener("click", () => {
   window.location.href = "#";
 });
 
-/* Start audio */
+/* first click anywhere starts audio + glitch loop */
 document.addEventListener("click", () => {
   audio.play();
   startGlitchLoop();
 }, { once: true });
 
-/* Loop every 15s */
 function startGlitchLoop() {
   setInterval(triggerGlitch, 15000);
 }
 
-/* CLEAN GLITCH SYSTEM */
+/* ── GLITCH ─────────────────────────────────── */
 function triggerGlitch() {
   if (audio.paused) return;
 
   const baseTime = audio.currentTime;
+  const duration = 1500;
+  const tick     = 55;
 
-  // low pitch glitch
+  /* kill float so we have full transform control */
+  cd.style.animation = "none";
+
+  /* slow-pitch audio glitch */
   audio.playbackRate = 0.6;
 
-  let duration = 1500; // glitch duration
-  let intervalTime = 70;
+  const glitch = setInterval(() => {
 
-  const glitchInterval = setInterval(() => {
-    // small random offsets near center
-    let x = (Math.random() - 0.5) * 30;
-    let y = (Math.random() - 0.5) * 30;
+    /* ── position teleport ── */
+    const big = Math.random() > 0.7;                       // 30 % chance of a big jump
+    const range = big ? 160 : 50;
+    const x = (Math.random() - 0.5) * range;
+    const y = (Math.random() - 0.5) * range;
 
-    // size jitter
-    let scale = 0.85 + Math.random() * 0.4;
+    /* ── scale jitter ── */
+    let scale;
+    const roll = Math.random();
+    if      (roll > 0.92) scale = 1.9  + Math.random() * 0.6;   // blowup
+    else if (roll > 0.82) scale = 0.25 + Math.random() * 0.25;  // shrink
+    else                  scale = 0.75 + Math.random() * 0.5;    // normal jitter
 
-    cd.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    /* ── rotation + skew ── */
+    const rotate = (Math.random() - 0.5) * (big ? 30 : 10);
+    const skewX  = Math.random() > 0.8 ? (Math.random() - 0.5) * 20 : 0;
 
-    // audio stutter (same slice)
-    audio.currentTime = baseTime + (Math.random() * 0.025);
+    /* ── opacity flicker ── */
+    const opacity = Math.random() > 0.82 ? (0.15 + Math.random() * 0.35) : 1;
 
-  }, intervalTime);
+    /* ── filter glitch ── */
+    let filter = "";
+    if (Math.random() > 0.65)
+      filter = `hue-rotate(${Math.random() * 360}deg) brightness(${0.4 + Math.random() * 1.8})`;
+    if (Math.random() > 0.88)
+      filter += ` blur(${1 + Math.random() * 2.5}px)`;
+    if (Math.random() > 0.92)
+      filter += ` invert(1)`;
 
+    /* apply */
+    cd.style.transform = `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg) skewX(${skewX}deg)`;
+    cd.style.opacity   = opacity;
+    cd.style.filter    = filter;
+
+    /* audio stutter — replay the same tiny slice */
+    audio.currentTime = baseTime + Math.random() * 0.025;
+
+  }, tick);
+
+  /* ── cleanup ── */
   setTimeout(() => {
-    clearInterval(glitchInterval);
+    clearInterval(glitch);
 
-    // reset visuals cleanly
     cd.style.transform = "";
-    audio.playbackRate = 1;
+    cd.style.opacity   = "";
+    cd.style.filter    = "";
+    audio.playbackRate  = 1;
+
+    /* restart float animation (reflow trick) */
+    void cd.offsetHeight;
+    cd.style.animation = "float 4s ease-in-out infinite";
 
   }, duration);
 }
