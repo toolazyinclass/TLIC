@@ -47,7 +47,7 @@ body {
   100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* HOVER = stop float + shake */
+/* HOVER */
 @media (hover: hover) {
   #cd:hover {
     animation: shake 0.08s infinite;
@@ -55,7 +55,6 @@ body {
   }
 }
 
-/* MOBILE */
 #cd:active {
   animation: shake 0.08s infinite;
   transform: scale(1.2);
@@ -70,7 +69,7 @@ body {
   100% { transform: translate(-2px, -2px) rotate(-1deg) scale(1.28); }
 }
 
-/* Mobile size */
+/* Mobile */
 @media (max-width: 600px) {
   #cd {
     width: 180px;
@@ -101,48 +100,48 @@ document.addEventListener("click", () => {
   startGlitchLoop();
 }, { once: true });
 
-/* VISUAL + AUDIO GLITCH (every 15s) */
+/* LOOP every 15s */
 function startGlitchLoop() {
-  setInterval(() => {
-    triggerGlitch();
-  }, 15000);
+  setInterval(triggerGlitch, 15000);
 }
 
+/* STRONGER GLITCH */
 function triggerGlitch() {
   if (audio.paused) return;
 
   const baseTime = audio.currentTime;
 
-  // low pitch
-  audio.playbackRate = 0.6;
+  // deeper low pitch
+  audio.playbackRate = 0.5;
 
   let count = 0;
-  let repeats = 12;
+  let repeats = 25; // more visual hits
 
-  // visual glitch loop
   const visual = setInterval(() => {
-    let x = (Math.random() - 0.5) * 40;   // small movement
-    let y = (Math.random() - 0.5) * 40;
-    let scale = 1 + (Math.random() * 0.3 - 0.15);
+    let x = (Math.random() - 0.5) * 120;  // wider movement
+    let y = (Math.random() - 0.5) * 120;
 
-    cd.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    let scale = 0.7 + Math.random() * 0.8; // more size variation
+    let rotate = (Math.random() - 0.5) * 40;
+
+    cd.style.transform =
+      `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg)`;
 
     count++;
     if (count >= repeats) {
       clearInterval(visual);
-      cd.style.transform = ""; // reset
+      cd.style.transform = "";
     }
-  }, 60);
+  }, 40); // faster visual ticks
 
-  // audio stutter (same sound slice)
   const stutter = setInterval(() => {
-    audio.currentTime = baseTime + (Math.random() * 0.03);
-  }, 80);
+    audio.currentTime = baseTime + (Math.random() * 0.02);
+  }, 50); // tighter loop = harsher glitch
 
   setTimeout(() => {
     clearInterval(stutter);
-    audio.playbackRate = 1; // back to normal
-  }, 1200);
+    audio.playbackRate = 1;
+  }, 1800); // longer glitch
 }
 </script>
 
