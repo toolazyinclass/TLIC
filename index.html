@@ -43,7 +43,7 @@ body {
   100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* HOVER (stops float) */
+/* HOVER */
 @media (hover: hover) {
   #cd:hover {
     animation: shake 0.08s infinite;
@@ -89,35 +89,38 @@ cd.addEventListener("click", () => {
   window.location.href = "#";
 });
 
-// Start audio
+// Start audio (required for mobile)
 document.addEventListener("click", () => {
   audio.play();
   scheduleGlitch();
 }, { once: true });
 
-/* AUDIO GLITCH ONLY (no visual effects) */
+/* AUDIO GLITCH (low pitch + stutter, no visual) */
 function glitchAudio() {
   if (audio.paused) return;
 
   const baseTime = audio.currentTime;
 
+  // low pitch
   audio.playbackRate = 0.6;
 
+  let repeats = 15;
   let count = 0;
-  let repeats = 12;
 
   const stutter = setInterval(() => {
-    audio.currentTime = baseTime + (Math.random() * 0.025);
+    audio.currentTime = baseTime + (Math.random() * 0.02);
     count++;
-    if (count >= repeats) clearInterval(stutter);
-  }, 80);
+    if (count >= repeats) {
+      clearInterval(stutter);
+    }
+  }, 70);
 
   setTimeout(() => {
     audio.playbackRate = 1;
-  }, 1200);
+  }, 1400);
 }
 
-/* Random 30–60 sec */
+/* Random 30–60 sec loop */
 function scheduleGlitch() {
   let time = Math.random() * (60000 - 30000) + 30000;
 
