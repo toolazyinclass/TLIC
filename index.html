@@ -38,25 +38,35 @@ body {
 
 /* FLOAT */
 @keyframes float {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-18px); }
-  100% { transform: translateY(0px); }
+  0%   { transform: translateY(0px) rotate(0deg); }
+  50%  { transform: translateY(-18px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* HOVER */
+/* HOVER (stops float) */
 @media (hover: hover) {
   #cd:hover {
-    animation: none;
+    animation: shake 0.08s infinite;
     transform: scale(1.28);
   }
 }
 
+/* MOBILE */
 #cd:active {
-  animation: none;
+  animation: shake 0.08s infinite;
   transform: scale(1.2);
 }
 
-/* Mobile */
+/* SHAKE */
+@keyframes shake {
+  0%   { transform: translate(0px, 0px) rotate(0deg) scale(1.28); }
+  25%  { transform: translate(2px, -2px) rotate(1deg) scale(1.28); }
+  50%  { transform: translate(-2px, 2px) rotate(-1deg) scale(1.28); }
+  75%  { transform: translate(2px, 2px) rotate(1deg) scale(1.28); }
+  100% { transform: translate(-2px, -2px) rotate(-1deg) scale(1.28); }
+}
+
+/* Mobile sizing */
 @media (max-width: 600px) {
   #cd {
     width: 180px;
@@ -74,56 +84,47 @@ body {
 const cd = document.getElementById("cd");
 const audio = document.getElementById("bgAudio");
 
+// Redirect
 cd.addEventListener("click", () => {
   window.location.href = "#";
 });
 
-/* Start audio */
+// Start audio
 document.addEventListener("click", () => {
   audio.play();
-  startGlitchLoop();
+  scheduleGlitch();
 }, { once: true });
 
-/* Loop every 15s */
-function startGlitchLoop() {
-  setInterval(triggerGlitch, 15000);
-}
-
-/* CLEAN GLITCH SYSTEM */
-function triggerGlitch() {
+/* AUDIO GLITCH ONLY (no visual effects) */
+function glitchAudio() {
   if (audio.paused) return;
 
   const baseTime = audio.currentTime;
 
-  // low pitch glitch
   audio.playbackRate = 0.6;
 
-  let duration = 1500; // glitch duration
-  let intervalTime = 70;
+  let count = 0;
+  let repeats = 12;
 
-  const glitchInterval = setInterval(() => {
-    // small random offsets near center
-    let x = (Math.random() - 0.5) * 30;
-    let y = (Math.random() - 0.5) * 30;
-
-    // size jitter
-    let scale = 0.85 + Math.random() * 0.4;
-
-    cd.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
-
-    // audio stutter (same slice)
+  const stutter = setInterval(() => {
     audio.currentTime = baseTime + (Math.random() * 0.025);
-
-  }, intervalTime);
+    count++;
+    if (count >= repeats) clearInterval(stutter);
+  }, 80);
 
   setTimeout(() => {
-    clearInterval(glitchInterval);
-
-    // reset visuals cleanly
-    cd.style.transform = "";
     audio.playbackRate = 1;
+  }, 1200);
+}
 
-  }, duration);
+/* Random 30–60 sec */
+function scheduleGlitch() {
+  let time = Math.random() * (60000 - 30000) + 30000;
+
+  setTimeout(() => {
+    glitchAudio();
+    scheduleGlitch();
+  }, time);
 }
 </script>
 
