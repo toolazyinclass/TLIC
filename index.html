@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>too lazy, in class</title>
-<meta name="description" content="an artist page... make that an excellent artist page...">
+<meta name="description" content="our artist page. taste the waves.">
 
 <link rel="icon" href="beach.gif">
 
@@ -27,16 +27,29 @@ body {
   justify-content: center;
 }
 
+/* Wrapper to prevent blending artifacts */
+.cd-wrap {
+  isolation: isolate;
+}
+
 /* CD */
 #cd {
   width: 220px;
   max-width: 60vw;
   cursor: pointer;
-  transition: transform 0.35s ease;
+
+  /* slower, smoother scale */
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ensure proper rendering */
+  background: transparent;
+  image-rendering: auto;
+
+  /* idle float */
   animation: float 4s ease-in-out infinite;
 }
 
-/* Floating wave motion */
+/* Floating animation */
 @keyframes float {
   0%   { transform: translateY(0px) rotate(0deg); }
   50%  { transform: translateY(-10px) rotate(1deg); }
@@ -57,7 +70,7 @@ body {
   animation: shake 0.05s infinite;
 }
 
-/* Continuous shake */
+/* Shake */
 @keyframes shake {
   0%   { transform: translate(0px, 0px) rotate(0deg) scale(1.28); }
   25%  { transform: translate(2px, -2px) rotate(1deg) scale(1.28); }
@@ -77,7 +90,9 @@ body {
 
 <body>
 
-<img id="cd" src="cd.gif" alt="CD Button">
+<div class="cd-wrap">
+  <img id="cd" src="cd.gif" alt="CD Button">
+</div>
 
 <audio id="bgAudio" src="beach.wav" loop></audio>
 
@@ -90,7 +105,7 @@ cd.addEventListener("click", () => {
   window.location.href = "#";
 });
 
-// Start audio after user interaction (mobile compatibility)
+// Start audio after user interaction
 document.addEventListener("click", () => {
   audio.play();
   scheduleGlitch();
@@ -125,7 +140,7 @@ function glitchAudio() {
   }, repeats * 100);
 }
 
-// Random glitch loop (30–90 sec)
+// Random glitch loop
 function scheduleGlitch() {
   let time = Math.random() * (90000 - 30000) + 30000;
 
