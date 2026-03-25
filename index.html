@@ -66,39 +66,37 @@ body {
 
 <script>
 const cd       = document.getElementById("cd");
+const bg       = document.getElementById("bg");
 const audio    = document.getElementById("bgAudio");
 const hasHover = window.matchMedia("(hover: hover)").matches;
+const isMobile = !hasHover;
 
 let isGlitching   = false;
 let isHovering    = false;
 let hoverProgress = 0;
 let hoverFrame    = null;
 
-let audioCtx;
-let gainNode;
-
 /* ── click → link ──────────────────────────── */
 cd.addEventListener("click", () => {
   window.location.href = "https://youtu.be/dQw4w9WgXcQ?si=GtJHGgjiBQBm4uSq";
 });
 
-/* ── first interaction → audio + web audio routing + glitch loop ── */
+/* ── first interaction → audio + glitch loop ── */
 document.addEventListener("click", () => {
   audio.play();
-
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  audioCtx.resume();
-
-  /* route <audio> through a gain node so we can stutter it */
-  const source = audioCtx.createMediaElementSource(audio);
-  gainNode = audioCtx.createGain();
-  source.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-
-  setInterval(triggerGlitch, 15000);
+  scheduleGlitch();
 }, { once: true });
 
-/* ── hover: progressive scale + vibration (1.5s ramp) ── */
+/* ── random interval 10–67 seconds ── */
+function scheduleGlitch() {
+  const delay = 10000 + Math.random() * 57000;
+  setTimeout(() => {
+    triggerGlitch();
+    scheduleGlitch();
+  }, delay);
+}
+
+/* ── hover: progressive scale + vibration (2s ramp) ── */
 if (hasHover) {
   cd.addEventListener("mouseenter", () => {
     if (isGlitching) return;
@@ -126,12 +124,11 @@ function runHover() {
     prev = now;
 
     hoverProgress = isHovering
-      ? Math.min(1, hoverProgress + dt / 1.5)
-      : Math.max(0, hoverProgress - dt / 1.5);
+      ? Math.min(1, hoverProgress + dt / 2)
+      : Math.max(0, hoverProgress - dt / 2);
 
     if (hoverProgress <= 0 && !isHovering) {
       cd.style.transform = "";
-      cd.style.filter    = "";
       void cd.offsetHeight;
       cd.style.animation = "float 4s ease-in-out infinite";
       hoverFrame = null;
@@ -153,9 +150,9 @@ function runHover() {
   hoverFrame = requestAnimationFrame(tick);
 }
 
-/* ── glitch ── */
+/* ── glitch (full chaos) ── */
 function triggerGlitch() {
-  if (audio.paused || !gainNode) return;
+  if (audio.paused) return;
   isGlitching = true;
 
   if (hoverFrame) {
@@ -164,29 +161,31 @@ function triggerGlitch() {
     hoverProgress = 0;
   }
 
+  const baseTime = audio.currentTime;
   const duration = 1500;
 
   cd.style.animation = "none";
 
-  /* slow pitch */
-  audio.playbackRate = 0.6;
+  /* audio — mute on mobile, stutter on desktop */
+  if (isMobile) {
+    audio.muted = true;
+  } else {
+    audio.playbackRate = 0.6;
+  }
+
+  /* pick two random BG offsets to alternate between (stutter) */
+  const bgPosA = { x: (Math.random() - 0.5) * 20, y: (Math.random() - 0.5) * 20 };
+  const bgPosB = { x: (Math.random() - 0.5) * 20, y: (Math.random() - 0.5) * 20 };
+  let bgFlip = false;
 
   const loop = setInterval(() => {
 
-    /* ── audio stutter via gain toggling ── */
-    const roll = Math.random();
-    if (roll > 0.65) {
-      gainNode.gain.value = 0;                          // silence gap
-    } else if (roll > 0.35) {
-      gainNode.gain.value = 0.2 + Math.random() * 0.4;  // quiet hit
-    } else {
-      gainNode.gain.value = 0.8 + Math.random() * 0.4;  // loud hit
+    /* ── desktop audio stutter ── */
+    if (!isMobile) {
+      audio.currentTime = baseTime + Math.random() * 0.025;
     }
 
-    /* ── playback rate jitter ── */
-    audio.playbackRate = 0.4 + Math.random() * 0.45;
-
-    /* ── visual glitch ── */
+    /* ── CD visual glitch — full chaos ── */
     const big   = Math.random() > 0.7;
     const range = big ? 160 : 50;
     const x     = (Math.random() - 0.5) * range;
@@ -204,29 +203,54 @@ function triggerGlitch() {
     cd.style.transform =
       `translate(${x}px,${y}px) scale(${scale}) rotate(${rot}deg) skewX(${skew}deg)`;
 
-    /* ── subtle color glitch ── */
     let filter = "";
-    if (Math.random() > 0.6)
-      filter = `hue-rotate(${Math.random() * 80 - 40}deg) brightness(${0.75 + Math.random() * 0.5})`;
-    if (Math.random() > 0.85)
-      filter += ` saturate(${0.5 + Math.random() * 1.2})`;
+    if (Math.random() > 0.65)
+      filter = `hue-rotate(${Math.random() * 360}deg) brightness(${0.4 + Math.random() * 1.8})`;
+    if (Math.random() > 0.88)
+      filter += ` blur(${1 + Math.random() * 2.5}px)`;
     if (Math.random() > 0.92)
-      filter += ` contrast(${0.8 + Math.random() * 0.4})`;
+      filter += ` invert(1)`;
 
     cd.style.filter  = filter;
-    cd.style.opacity = Math.random() > 0.88 ? (0.55 + Math.random() * 0.35) : 1;
+    cd.style.opacity = Math.random() > 0.82 ? (0.15 + Math.random() * 0.35) : 1;
+
+    /* ── BG stutter glitch — flip between two positions ── */
+    bgFlip = !bgFlip;
+    const pos = bgFlip ? bgPosA : bgPosB;
+
+    const bgScale = 1 + (Math.random() - 0.5) * 0.06;
+    bg.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${bgScale})`;
+    bg.style.opacity = Math.random() > 0.8 ? (0.5 + Math.random() * 0.3) : 1;
+
+    let bgFilter = "";
+    if (Math.random() > 0.75)
+      bgFilter = `brightness(${0.5 + Math.random() * 0.8})`;
+    if (Math.random() > 0.9)
+      bgFilter += ` hue-rotate(${Math.random() * 60 - 30}deg)`;
+    bg.style.filter = bgFilter;
 
   }, 55);
 
   setTimeout(() => {
     clearInterval(loop);
+    isGlitching = false;
 
-    isGlitching        = false;
-    gainNode.gain.value = 1;
-    audio.playbackRate  = 1;
-    cd.style.transform  = "";
-    cd.style.filter     = "";
-    cd.style.opacity    = "";
+    /* reset audio */
+    if (isMobile) {
+      audio.muted = false;
+    } else {
+      audio.playbackRate = 1;
+    }
+
+    /* reset CD */
+    cd.style.transform = "";
+    cd.style.filter    = "";
+    cd.style.opacity   = "";
+
+    /* reset BG */
+    bg.style.transform = "";
+    bg.style.filter    = "";
+    bg.style.opacity   = "";
 
     void cd.offsetHeight;
     cd.style.animation = "float 4s ease-in-out infinite";
