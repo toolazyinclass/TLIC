@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PLAYER</title>
+<link rel="icon" href="beach.gif">
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  height:100%; width:100%;
+  overflow:hidden;
+  background:#008080;
+  font-family: Tahoma,"MS Sans Serif",Geneva,sans-serif;
+  font-size:11px; color:#000;
+  user-select:none;
+}
+
+/* ── background ── */
+#bg {
+  position:fixed; inset:-20px;
+  background:url("xp.gif") no-repeat center center;
+  background-size:cover;
+  z-index:0;
+}
+
+/* ── window base ── */
+.win {
+  position:fixed;
+  background:#c0c0c0;
+  border:2px solid;
+  border-color:#dfdfdf #404040 #404040 #dfdfdf;
+  box-shadow:1px 1px 0 #000;
+}
+
+.win-title {
+  background:linear-gradient(90deg,#0a246a,#3a6ea5);
+  color:#fff; font-size:11px; font-weight:bold;
+  padding:3px 4px;
+  display:flex; align-items:center; justify-content:space-between;
+  white-space:nowrap;
+}
+
+.win-title-text { display:flex; align-items:center; gap:4px; }
+
+.win-btns { display:flex; gap:2px; flex-shrink:0; }
+
+.win-btns span {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px; height:14px; background:#c0c0c0;
+  border:1px solid; border-color:#dfdfdf #808080 #808080 #dfdfdf;
+  font-size:10px; font-weight:bold; color:#000; cursor:default;
+}
+
+/* ── notes ── */
+.note { z-index:1; width:175px; }
+
+.note-menu {
+  display:flex; padding:2px 0;
+  border-bottom:1px solid #808080;
+}
+.note-menu span { padding:1px 6px; cursor:default; }
+
+.note-body {
+  background:#fff; color:#000;
+  font-family:"Lucida Console","Courier New",monospace;
+  font-size:13px; padding:4px 6px; min-height:45px;
+  border:1px solid; border-color:#808080 #dfdfdf #dfdfdf #808080;
+  margin:4px;
+}
+
+/* ── error ── */
+.error { z-index:1; }
+
+.error-body {
+  display:flex; align-items:center;
+  gap:12px; padding:16px 14px 10px;
+}
+.error-icon { font-size:28px; flex-shrink:0; }
+.error-text { font-size:11px; line-height:1.4; }
+
+.error-buttons {
+  display:flex; justify-content:center;
+  gap:8px; padding:4px 14px 12px;
+}
+
+.xp-btn {
+  background:#c0c0c0;
+  border:2px solid; border-color:#dfdfdf #808080 #808080 #dfdfdf;
+  padding:2px 0; font-family:inherit; font-size:11px;
+  cursor:default; min-width:75px; text-align:center;
+}
+.xp-btn:active { border-color:#808080 #dfdfdf #dfdfdf #808080; }
+
+/* ── player window ── */
+.player-win {
+  left:50%; top:50%; transform:translate(-50%,-50%);
+  z-index:2;
+}
+
+.player-nav {
+  display:flex; align-items:center;
+  padding:2px 3px; gap:2px;
+}
+
+.nav-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:20px; background:#c0c0c0;
+  border:1px solid; border-color:#dfdfdf #808080 #808080 #dfdfdf;
+  font-size:11px; cursor:default; padding:0 3px;
+}
+
+.player-win canvas {
+  display:block; margin:0 3px;
+  border:2px solid; border-color:#808080 #dfdfdf #dfdfdf #808080;
+}
+
+.player-bar {
+  display:flex; align-items:center;
+  gap:6px; padding:3px 5px; margin:2px 3px 0;
+}
+
+.seek-track {
+  flex:1; height:10px; background:#c0c0c0;
+  border:1px solid; border-color:#808080 #dfdfdf #dfdfdf #808080;
+}
+.seek-fill { height:100%; background:#000080; width:0%; transition:width .3s; }
+
+.time-display {
+  font-family:"Lucida Console",monospace;
+  font-size:11px; min-width:38px; text-align:right;
+}
+
+.player-controls {
+  display:flex; align-items:center;
+  gap:2px; padding:3px 4px 4px; margin:0 3px 3px;
+}
+
+.ctrl-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:20px; background:#c0c0c0;
+  border:1px solid; border-color:#dfdfdf #808080 #808080 #dfdfdf;
+  font-size:9px; cursor:default; padding:0 2px;
+}
+
+.ctrl-spacer { flex:1; }
+
+/* ── positions ── */
+#note1 { top:3%;  left:1%; width:170px; }
+#note2 { top:2%;  right:3%; width:180px; }
+#note3 { top:68%; left:1%; width:160px; }
+#note4 { top:70%; right:2%; width:172px; }
+#note5 { top:34%; right:1%; width:155px; }
+#note6 { top:18%; left:30%; width:168px; }
+
+#error1 { top:28%; left:2%; }
+#error2 { top:56%; right:4%; }
+
+/* ── mobile ── */
+@media (max-width:600px) {
+  .note, .error { transform:scale(.7); transform-origin:top left; }
+  .player-win canvas { width:88vw; height:auto; }
+}
+</style>
+</head>
+
+<body>
+<div id="bg"></div>
+
+<!-- ── NOTES ── -->
+<div class="win note" id="note1">
+  <div class="win-title">
+    <span class="win-title-text">📝 Notes</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+  <div class="note-body">welcome</div>
+</div>
+
+<div class="win note" id="note2">
+  <div class="win-title">
+    <span class="win-title-text">📝 Notes</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+  <div class="note-body">welcome</div>
+</div>
+
+<div class="win note" id="note3">
+  <div class="win-title">
+    <span class="win-title-text">📝 Notes</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+  <div class="note-body">welcome</div>
+</div>
+
+<div class="win note" id="note4">
+  <div class="win-title">
+    <span class="win-title-text">📝 Notes</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+  <div class="note-body">welcome</div>
+</div>
+
+<div class="win note" id="note5">
+  <div class="win-title">
+    <span class="win-title-text">📝 Notes</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+  <div class="note-body">welcome</div>
+</div>
+
+<div class="win note" id="note6">
+  <div class="win-title">
+    <span class="win-title-text">📝 Notes</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+  <div class="note-body">welcome</div>
+</div>
+
+<!-- ── ERRORS ── -->
+<div class="win error" id="error1">
+  <div class="win-title">
+    <span class="win-title-text">SYSTEM ERROR</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="error-body">
+    <span class="error-icon">⚠️</span>
+    <span class="error-text">ERROR_NOT_ENOUGH_MEMORY</span>
+  </div>
+  <div class="error-buttons"><button class="xp-btn">OK</button></div>
+</div>
+
+<div class="win error" id="error2">
+  <div class="win-title">
+    <span class="win-title-text">ERROR</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="error-body">
+    <span class="error-icon">❌</span>
+    <span class="error-text">Click "Fix" to fix error.</span>
+  </div>
+  <div class="error-buttons"><button class="xp-btn">Fix</button></div>
+</div>
+
+<!-- ── PLAYER ── -->
+<div class="win player-win" id="playerWin">
+  <div class="win-title">
+    <span class="win-title-text">PLAYER</span>
+    <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
+  </div>
+  <div class="player-nav">
+    <span class="nav-btn">←</span>
+    <span class="nav-btn">→</span>
+    <span class="ctrl-spacer"></span>
+    <span class="nav-btn">⚙</span>
+    <span class="nav-btn">i</span>
+    <span class="nav-btn">≡</span>
+  </div>
+  <canvas id="gameCanvas" width="440" height="330"></canvas>
+  <div class="player-bar">
+    <div class="seek-track"><div class="seek-fill" id="seekFill"></div></div>
+    <span class="time-display" id="timeDisplay">00:00</span>
+  </div>
+  <div class="player-controls">
+    <span class="ctrl-btn">■</span>
+    <span class="ctrl-btn">▶</span>
+    <span class="ctrl-btn">‖</span>
+    <span class="ctrl-btn">|◀</span>
+    <span class="ctrl-btn">◀◀</span>
+    <span class="ctrl-btn">▶▶</span>
+    <span class="ctrl-btn">▶|</span>
+    <span class="ctrl-btn">▲</span>
+    <span class="ctrl-spacer"></span>
+    <span class="ctrl-btn">🔈</span>
+    <span class="ctrl-btn">🔊</span>
+  </div>
+</div>
+
+<audio id="bgAudio" src="endless.wav" loop></audio>
+
+<script>
+/* ── audio ── */
+const bgAudio = document.getElementById('bgAudio');
+bgAudio.play().catch(() => {
+  const s = () => { bgAudio.play(); document.removeEventListener('keydown',s); document.removeEventListener('click',s); };
+  document.addEventListener('keydown', s);
+  document.addEventListener('click', s);
+});
+
+/* ── canvas ── */
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const W = 440, H = 330;
+
+/* ── paddle ── */
+const paddle = { w:70, h:10, x:W/2-35, y:H-28, speed:5.5 };
+
+/* ── balls ── */
+let balls = [];
+let gameStarted  = false;
+let extraBallUsed = false;
+let gameOver = false;
+let gameOverTimer = 0;
+let youWin = false;
+let winTimer = 0;
+
+function makeBall(x,y,dx,dy) { return {x,y,dx,dy,r:5}; }
+function sittingBall() { return makeBall(paddle.x+paddle.w/2, paddle.y-6, 0, 0); }
+
+/* ── bricks ── */
+const COLS = 10, ROWS = 6, BPAD = 4, BOX = 12, BOY = 28;
+const BW = (W - BOX*2 - (COLS-1)*BPAD) / COLS;
+const BH = 16;
+
+const rowColors = [
+  '#c25b56','#d4946a','#c9b458',
+  '#6aab6f','#5b89b4','#8b6baf'
+];
+
+let bricks = [], totalBricks = 0, broken = 0;
+
+function initBricks() {
+  bricks = []; totalBricks = ROWS*COLS; broken = 0;
+  for (let r=0; r<ROWS; r++) {
+    bricks[r] = [];
+    for (let c=0; c<COLS; c++) {
+      bricks[r][c] = {
+        x: BOX + c*(BW+BPAD),
+        y: BOY + r*(BH+BPAD),
+        alive: true,
+        color: rowColors[r]
+      };
+    }
+  }
+}
+
+function resetGame() {
+  gameStarted = false; extraBallUsed = false;
+  gameOver = false; gameOverTimer = 0;
+  youWin = false; winTimer = 0;
+  startTime = null;
+  paddle.x = W/2 - paddle.w/2;
+  balls = [sittingBall()];
+  initBricks();
+  document.getElementById('seekFill').style.width = '0%';
+  document.getElementById('timeDisplay').textContent = '00:00';
+}
+
+resetGame();
+
+/* ── input ── */
+const keys = {};
+
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+
+  if (e.key==='ArrowUp' && !gameStarted && !gameOver && !youWin) {
+    gameStarted = true;
+    const a = (Math.random()-0.5)*0.8;
+    balls[0].dx = 4*Math.sin(a);
+    balls[0].dy = -4*Math.cos(a);
+  }
+
+  if (e.key==='ArrowDown' && !extraBallUsed && gameStarted && !gameOver && !youWin) {
+    extraBallUsed = true;
+    const rx = 40+Math.random()*(W-80);
+    const ry = H*0.3+Math.random()*(H*0.25);
+    const a  = (Math.random()-0.5)*Math.PI*0.6;
+    balls.push(makeBall(rx, ry, 4*Math.sin(a), -4*Math.cos(a)));
+  }
+
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+});
+
+document.addEventListener('keyup', e => { keys[e.key]=false; });
+
+/* ── timer ── */
+let startTime = null;
+const seekFill   = document.getElementById('seekFill');
+const timeDisplay = document.getElementById('timeDisplay');
+
+function fmt(s) {
+  const m=Math.floor(s/60), sc=Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(sc).padStart(2,'0');
+}
+
+/* ── update ── */
+function update() {
+  /* game over countdown */
+  if (gameOver) { gameOverTimer--; if (gameOverTimer<=0) resetGame(); return; }
+
+  /* win countdown */
+  if (youWin) { winTimer--; if (winTimer<=0) window.location.href="https://youtu.be/iLJNSD3H5sg?si=7Je-et7CjqS3Z5X4"; return; }
+
+  /* paddle */
+  if (keys['ArrowLeft'])  paddle.x -= paddle.speed;
+  if (keys['ArrowRight']) paddle.x += paddle.speed;
+  paddle.x = Math.max(0, Math.min(W-paddle.w, paddle.x));
+
+  /* ball on paddle before launch */
+  if (!gameStarted && balls.length) {
+    balls[0].x = paddle.x + paddle.w/2;
+    balls[0].y = paddle.y - balls[0].r - 1;
+  }
+
+  /* update balls */
+  for (let i=balls.length-1; i>=0; i--) {
+    const b = balls[i];
+    if (!gameStarted && i===0) continue;
+
+    b.x += b.dx;
+    b.y += b.dy;
+
+    /* walls */
+    if (b.x-b.r<=0)  { b.x=b.r;    b.dx=Math.abs(b.dx);  }
+    if (b.x+b.r>=W)  { b.x=W-b.r;  b.dx=-Math.abs(b.dx); }
+    if (b.y-b.r<=0)  { b.y=b.r;    b.dy=Math.abs(b.dy);  }
+
+    /* paddle */
+    if (b.dy>0 && b.y+b.r>=paddle.y && b.y+b.r<=paddle.y+paddle.h+5
+        && b.x+b.r>=paddle.x && b.x-b.r<=paddle.x+paddle.w) {
+      const hit = Math.max(0.08, Math.min(0.92, (b.x-paddle.x)/paddle.w));
+      const ang = (hit-0.5)*Math.PI*0.62;
+      b.dx = 4*Math.sin(ang);
+      b.dy = -4*Math.cos(ang);
+      b.y  = paddle.y - b.r - 1;
+    }
+
+    /* bricks */
+    let hitBrick = false;
+    for (let r=0; r<ROWS && !hitBrick; r++) {
+      for (let c=0; c<COLS && !hitBrick; c++) {
+        const br = bricks[r][c];
+        if (!br.alive) continue;
+        if (b.x+b.r>br.x && b.x-b.r<br.x+BW && b.y+b.r>br.y && b.y-b.r<br.y+BH) {
+          br.alive = false; broken++; hitBrick = true;
+          const oL = b.x+b.r - br.x;
+          const oR = br.x+BW - (b.x-b.r);
+          const oT = b.y+b.r - br.y;
+          const oB = br.y+BH - (b.y-b.r);
+          if (Math.min(oL,oR) < Math.min(oT,oB)) b.dx=-b.dx; else b.dy=-b.dy;
+        }
+      }
+    }
+
+    /* fall out */
+    if (b.y-b.r > H) balls.splice(i,1);
+  }
+
+  /* lose */
+  if (gameStarted && balls.length===0 && !youWin) {
+    gameOver = true; gameOverTimer = 100;
+  }
+
+  /* win */
+  if (broken >= totalBricks && !youWin) {
+    youWin = true; winTimer = 100;
+  }
+
+  /* seek bar */
+  seekFill.style.width = ((broken/totalBricks)*100)+'%';
+
+  /* timer */
+  if (gameStarted && !startTime) startTime = Date.now();
+  if (startTime && !gameOver && !youWin) timeDisplay.textContent = fmt((Date.now()-startTime)/1000);
+}
+
+/* ── draw ── */
+function draw() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,W,H);
+
+  /* bricks */
+  for (let r=0; r<ROWS; r++) {
+    for (let c=0; c<COLS; c++) {
+      const br = bricks[r][c];
+      if (!br.alive) continue;
+      ctx.fillStyle = br.color;
+      ctx.fillRect(br.x, br.y, BW, BH);
+      /* highlight */
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.fillRect(br.x, br.y, BW, 2);
+      ctx.fillRect(br.x, br.y, 2, BH);
+      /* shadow */
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fillRect(br.x, br.y+BH-2, BW, 2);
+      ctx.fillRect(br.x+BW-2, br.y, 2, BH);
+    }
+  }
+
+  /* paddle */
+  ctx.fillStyle = '#c0c0c0';
+  ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+  ctx.fillStyle = '#dfdfdf';
+  ctx.fillRect(paddle.x, paddle.y, paddle.w, 1);
+  ctx.fillRect(paddle.x, paddle.y, 1, paddle.h);
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(paddle.x, paddle.y+paddle.h-1, paddle.w, 1);
+  ctx.fillRect(paddle.x+paddle.w-1, paddle.y, 1, paddle.h);
+
+  /* balls */
+  ctx.fillStyle = '#fff';
+  for (const b of balls) {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  /* extra ball indicator */
+  if (gameStarted && !extraBallUsed && !gameOver && !youWin) {
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '10px Tahoma,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('↓ extra ball ready', W-6, H-6);
+  }
+
+  /* instructions */
+  if (!gameStarted && !gameOver && !youWin) {
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = '11px Tahoma,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('↑ LAUNCH    ←→ MOVE    ↓ EXTRA BALL (×1)', W/2, H-6);
+  }
+
+  /* game over */
+  if (gameOver) {
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#e44';
+    ctx.font = 'bold 22px Tahoma,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', W/2, H/2-4);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '11px Tahoma,sans-serif';
+    ctx.fillText('restarting...', W/2, H/2+16);
+  }
+
+  /* you win */
+  if (youWin) {
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#4c8';
+    ctx.font = 'bold 24px Tahoma,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('YOU WIN!', W/2, H/2-4);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '11px Tahoma,sans-serif';
+    ctx.fillText('redirecting...', W/2, H/2+16);
+  }
+}
+
+/* ── loop ── */
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+loop();
+</script>
+
+</body>
+</html>
