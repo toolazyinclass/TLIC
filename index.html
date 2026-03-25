@@ -29,7 +29,6 @@ body {
   justify-content: center;
 }
 
-/* background — oversized to kill mobile white borders */
 #bg {
   position: fixed;
   inset: -20px;
@@ -38,7 +37,6 @@ body {
   z-index: 0;
 }
 
-/* cd */
 #cd {
   width: 220px;
   max-width: 60vw;
@@ -67,27 +65,39 @@ body {
 <audio id="bgAudio" src="beach.wav" loop></audio>
 
 <script>
-const cd    = document.getElementById("cd");
-const audio = document.getElementById("bgAudio");
+const cd       = document.getElementById("cd");
+const audio    = document.getElementById("bgAudio");
 const hasHover = window.matchMedia("(hover: hover)").matches;
 
 let isGlitching   = false;
-let isHovering     = false;
-let hoverProgress  = 0;
-let hoverFrame     = null;
+let isHovering    = false;
+let hoverProgress = 0;
+let hoverFrame    = null;
+
+let audioCtx;
+let audioBuffer;
 
 /* ── click → link ──────────────────────────── */
 cd.addEventListener("click", () => {
   window.location.href = "https://youtu.be/dQw4w9WgXcQ?si=GtJHGgjiBQBm4uSq";
 });
 
-/* ── first interaction → audio + glitch loop ─ */
+/* ── first interaction → audio + decode buffer + glitch loop ── */
 document.addEventListener("click", () => {
   audio.play();
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume();
+
+  fetch("beach.wav")
+    .then(res => res.arrayBuffer())
+    .then(buf => audioCtx.decodeAudioData(buf))
+    .then(decoded => { audioBuffer = decoded; });
+
   setInterval(triggerGlitch, 15000);
 }, { once: true });
 
-/* ── hover: progressive scale + vibration ──── */
+/* ── hover: progressive scale + vibration (1.5s ramp) ── */
 if (hasHover) {
   cd.addEventListener("mouseenter", () => {
     if (isGlitching) return;
@@ -115,23 +125,23 @@ function runHover() {
     prev = now;
 
     hoverProgress = isHovering
-      ? Math.min(1, hoverProgress + dt / 2)
-      : Math.max(0, hoverProgress - dt / 2);
+      ? Math.min(1, hoverProgress + dt / 1.5)
+      : Math.max(0, hoverProgress - dt / 1.5);
 
     if (hoverProgress <= 0 && !isHovering) {
       cd.style.transform = "";
+      cd.style.filter    = "";
       void cd.offsetHeight;
       cd.style.animation = "float 4s ease-in-out infinite";
       hoverFrame = null;
       return;
     }
 
-    const t = hoverProgress * hoverProgress;
-
+    const t     = hoverProgress * hoverProgress;
     const scale = 1 + hoverProgress * 0.18;
-    const sx = (Math.random() - 0.5) * 12 * t;
-    const sy = (Math.random() - 0.5) * 12 * t;
-    const sr = (Math.random() - 0.5) * 6  * t;
+    const sx    = (Math.random() - 0.5) * 12 * t;
+    const sy    = (Math.random() - 0.5) * 12 * t;
+    const sr    = (Math.random() - 0.5) * 6  * t;
 
     cd.style.transform =
       `translate(${sx}px,${sy}px) scale(${scale}) rotate(${sr}deg)`;
@@ -142,9 +152,9 @@ function runHover() {
   hoverFrame = requestAnimationFrame(tick);
 }
 
-/* ── glitch (no color / filter changes) ────── */
+/* ── glitch ── */
 function triggerGlitch() {
-  if (audio.paused) return;
+  if (audio.paused || !audioBuffer) return;
   isGlitching = true;
 
   if (hoverFrame) {
@@ -153,13 +163,29 @@ function triggerGlitch() {
     hoverProgress = 0;
   }
 
-  const baseTime = audio.currentTime;
+  const baseTime = audio.currentTime % audioBuffer.duration;
   const duration = 1500;
 
   cd.style.animation = "none";
-  audio.playbackRate = 0.6;
+  audio.muted = true;
+
+  let currentSource = null;
 
   const loop = setInterval(() => {
+
+    /* ── audio stutter ── */
+    if (currentSource) {
+      try { currentSource.stop(); } catch (e) {}
+    }
+
+    const source  = audioCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.playbackRate.value = 0.6;
+    source.connect(audioCtx.destination);
+    source.start(0, baseTime + Math.random() * 0.025, 0.1);
+    currentSource = source;
+
+    /* ── visual glitch ── */
     const big   = Math.random() > 0.7;
     const range = big ? 160 : 50;
     const x     = (Math.random() - 0.5) * range;
@@ -177,15 +203,32 @@ function triggerGlitch() {
     cd.style.transform =
       `translate(${x}px,${y}px) scale(${scale}) rotate(${rot}deg) skewX(${skew}deg)`;
 
-    audio.currentTime = baseTime + Math.random() * 0.025;
+    /* ── subtle color glitch ── */
+    let filter = "";
+    if (Math.random() > 0.6)
+      filter = `hue-rotate(${Math.random() * 80 - 40}deg) brightness(${0.75 + Math.random() * 0.5})`;
+    if (Math.random() > 0.85)
+      filter += ` saturate(${0.5 + Math.random() * 1.2})`;
+    if (Math.random() > 0.92)
+      filter += ` contrast(${0.8 + Math.random() * 0.4})`;
+
+    cd.style.filter  = filter;
+    cd.style.opacity = Math.random() > 0.88 ? (0.55 + Math.random() * 0.35) : 1;
+
   }, 55);
 
   setTimeout(() => {
     clearInterval(loop);
-    isGlitching = false;
 
+    if (currentSource) {
+      try { currentSource.stop(); } catch (e) {}
+    }
+
+    isGlitching    = false;
+    audio.muted    = false;
     cd.style.transform = "";
-    audio.playbackRate = 1;
+    cd.style.filter    = "";
+    cd.style.opacity   = "";
 
     void cd.offsetHeight;
     cd.style.animation = "float 4s ease-in-out infinite";
