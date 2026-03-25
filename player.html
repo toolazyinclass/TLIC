@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PLAYER</title>
+<title>too lazy, in class</title>
 <link rel="icon" href="beach.gif">
 
 <style>
@@ -12,7 +12,7 @@
 html, body {
   height:100%; width:100%;
   overflow:hidden;
-  background:#008080;
+  background:#000; /* Seamless black fallback */
   font-family:Tahoma,"MS Sans Serif",Geneva,sans-serif;
   font-size:11px; color:#000;
   user-select:none;
@@ -82,7 +82,14 @@ html, body {
   display:flex; align-items:center;
   gap:12px; padding:16px 14px 10px;
 }
-.error-icon { font-size:28px; flex-shrink:0; }
+
+.error-icon-box {
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+  font-size:24px; font-weight:bold; flex-shrink:0; border-radius:50%;
+}
+#error1 .error-icon-box { color:#d0b000; font-family:"Times New Roman",serif; font-style:italic; }
+#error2 .error-icon-box { color:#fff; background:#c00000; font-family:sans-serif; }
+
 .error-text { font-size:11px; line-height:1.4; }
 
 .error-buttons {
@@ -116,8 +123,10 @@ html, body {
   display:inline-flex; align-items:center; justify-content:center;
   min-width:22px; height:20px; background:#c0c0c0;
   border:1px solid; border-color:#dfdfdf #808080 #808080 #dfdfdf;
-  font-size:11px; cursor:default; padding:0 3px;
+  font-size:11px; cursor:pointer; padding:0 3px;
+  touch-action: none;
 }
+.nav-btn:active { border-color:#808080 #dfdfdf #dfdfdf #808080; }
 
 .player-win canvas {
   display:block; margin:0 3px;
@@ -158,10 +167,21 @@ html, body {
 
 .ctrl-spacer { flex:1; }
 
-/* ── mobile ── */
+/* ── Mobile Overhaul ── */
 @media (max-width:600px) {
-  .note, .error { transform:scale(.65); transform-origin:top left; }
-  #note2, #note4, #note5, #error2 { transform-origin:top right; }
+  .note, .error { transform:scale(0.65); }
+
+  #note1 { top:2%; left:2%; transform-origin: top left; }
+  #note2 { top:2%; right:2%; left:auto; transform-origin: top right; }
+  #note6 { top:15%; left:2%; transform-origin: top left; }
+  
+  #note3 { top:auto; bottom:15%; left:2%; transform-origin: bottom left; }
+  #note4 { top:auto; bottom:2%; right:2%; left:auto; transform-origin: bottom right; }
+  #note5 { top:auto; bottom:2%; left:2%; transform-origin: bottom left; }
+
+  #error1 { top:26%; left:2%; transform-origin: top left; }
+  #error2 { top:auto; bottom:26%; right:2%; left:auto; transform-origin: bottom right; }
+
   .player-win { width:96vw; }
   .player-win canvas { width:calc(96vw - 10px); height:auto; }
 }
@@ -174,7 +194,7 @@ html, body {
 <!-- ── NOTES ── -->
 <div class="win note" id="note1">
   <div class="win-title">
-    <span>📝 Notes</span>
+    <span>Notes</span>
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
@@ -183,7 +203,7 @@ html, body {
 
 <div class="win note" id="note2">
   <div class="win-title">
-    <span>📝 Notes</span>
+    <span>Notes</span>
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
@@ -192,7 +212,7 @@ html, body {
 
 <div class="win note" id="note3">
   <div class="win-title">
-    <span>📝 Notes</span>
+    <span>Notes</span>
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
@@ -201,7 +221,7 @@ html, body {
 
 <div class="win note" id="note4">
   <div class="win-title">
-    <span>📝 Notes</span>
+    <span>Notes</span>
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
@@ -210,7 +230,7 @@ html, body {
 
 <div class="win note" id="note5">
   <div class="win-title">
-    <span>📝 Notes</span>
+    <span>Notes</span>
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
@@ -219,7 +239,7 @@ html, body {
 
 <div class="win note" id="note6">
   <div class="win-title">
-    <span>📝 Notes</span>
+    <span>Notes</span>
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="note-menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
@@ -233,7 +253,7 @@ html, body {
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="error-body">
-    <span class="error-icon">⚠️</span>
+    <div class="error-icon-box">!</div>
     <span class="error-text">ERROR_NOT_ENOUGH_MEMORY</span>
   </div>
   <div class="error-buttons"><button class="xp-btn" id="okBtn">OK</button></div>
@@ -245,7 +265,7 @@ html, body {
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="error-body">
-    <span class="error-icon">❌</span>
+    <div class="error-icon-box">X</div>
     <span class="error-text">Click "Fix" to fix error.</span>
   </div>
   <div class="error-buttons"><button class="xp-btn" id="fixBtn">Fix</button></div>
@@ -258,8 +278,8 @@ html, body {
     <div class="win-btns"><span>−</span><span>□</span><span>×</span></div>
   </div>
   <div class="player-nav">
-    <span class="nav-btn">←</span>
-    <span class="nav-btn">→</span>
+    <span class="nav-btn" id="btnLeft">←</span>
+    <span class="nav-btn" id="btnRight">→</span>
     <span class="ctrl-spacer"></span>
     <span class="nav-btn">⚙</span>
     <span class="nav-btn">i</span>
@@ -310,6 +330,8 @@ const ctx       = canvas.getContext("2d");
 const titleText = document.getElementById("titleText");
 const seekFill  = document.getElementById("seekFill");
 const timeTxt   = document.getElementById("timeDisplay");
+const btnLeft   = document.getElementById("btnLeft");
+const btnRight  = document.getElementById("btnRight");
 const W = 440, H = 330;
 
 /* ── game constants ── */
@@ -319,11 +341,13 @@ const BW  = (W - BX0 * 2 - (COLS - 1) * BPAD) / COLS;
 const BH  = 16;
 const BRICK_COLOR = "#a83838";
 
-const PW = 70, PH = 10, PY = H - 25, PSPEED = 5.5;
+const PW = 70, PH = 10, PY = H - 25;
 
-const BALL_SPEED  = 3.5;
-const BALL_SLOW   = 2.2;
-const BALL_FAST   = 5.5;
+/* Slower Speeds */
+const PSPEED     = 4.0;
+const BALL_SPEED = 2.5;
+const BALL_SLOW  = 1.6;
+const BALL_FAST  = 3.8;
 
 /* ── state ── */
 let state = "idle";
@@ -340,6 +364,9 @@ let usedRed    = false;
 let startTime  = null;
 
 const keys = {};
+
+let touchLeft = false;
+let touchRight = false;
 
 /* ── helpers ── */
 function mkBall(x, y, dx, dy, color, spd) {
@@ -371,7 +398,7 @@ function startGame() {
   usedRed    = false;
   startTime  = null;
   px = W / 2 - PW / 2;
-  balls = [mkBall(px + PW / 2, PY - 6, 0, 0, "#fff", BALL_SPEED)];
+  balls = [mkBall(px + PW / 2, PY - 6, 0, 0, "#000", BALL_SPEED)]; // Default Ball Black
   mkBricks();
   titleText.textContent = "PLAYER";
   seekFill.style.width  = "0%";
@@ -386,6 +413,21 @@ function launchBall() {
   balls[0].dx = BALL_SPEED * Math.sin(a);
   balls[0].dy = -BALL_SPEED * Math.cos(a);
 }
+
+/* ── mobile controls ── */
+btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); touchLeft = true; if (!launched && state === "playing") launchBall(); });
+btnLeft.addEventListener("touchend", () => touchLeft = false);
+
+btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); touchRight = true; if (!launched && state === "playing") launchBall(); });
+btnRight.addEventListener("touchend", () => touchRight = false);
+
+btnLeft.addEventListener("mousedown", () => { touchLeft = true; if (!launched && state === "playing") launchBall(); });
+btnLeft.addEventListener("mouseup", () => touchLeft = false);
+btnLeft.addEventListener("mouseleave", () => touchLeft = false);
+
+btnRight.addEventListener("mousedown", () => { touchRight = true; if (!launched && state === "playing") launchBall(); });
+btnRight.addEventListener("mouseup", () => touchRight = false);
+btnRight.addEventListener("mouseleave", () => touchRight = false);
 
 /* ── input ── */
 document.addEventListener("keydown", e => {
@@ -434,8 +476,8 @@ canvas.addEventListener("click", e => {
 function update() {
   if (state !== "playing") return;
 
-  if (keys["ArrowLeft"])  px -= PSPEED;
-  if (keys["ArrowRight"]) px += PSPEED;
+  if (keys["ArrowLeft"] || touchLeft)  px -= PSPEED;
+  if (keys["ArrowRight"] || touchRight) px += PSPEED;
   px = Math.max(0, Math.min(W - PW, px));
 
   if (!launched && balls.length) {
@@ -501,7 +543,7 @@ function update() {
 
 /* ── draw ── */
 function draw() {
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = "#fff"; // Canvas bg is White
   ctx.fillRect(0, 0, W, H);
 
   if (state === "idle") return;
@@ -524,12 +566,13 @@ function draw() {
     ctx.fillRect(br.x + BW - 2, br.y, 2, BH);
   }
 
-  ctx.fillStyle = "#c0c0c0";
+  /* Paddle is Black */
+  ctx.fillStyle = "#000";
   ctx.fillRect(px, PY, PW, PH);
-  ctx.fillStyle = "#dfdfdf";
+  ctx.fillStyle = "#333";
   ctx.fillRect(px, PY, PW, 1);
   ctx.fillRect(px, PY, 1, PH);
-  ctx.fillStyle = "#808080";
+  ctx.fillStyle = "#000";
   ctx.fillRect(px, PY + PH - 1, PW, 1);
   ctx.fillRect(px + PW - 1, PY, 1, PH);
 
@@ -540,7 +583,7 @@ function draw() {
     ctx.fill();
   }
 
-  ctx.fillStyle = "rgba(255,255,255,0.4)";
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
   ctx.font = "10px Tahoma,sans-serif";
   ctx.textAlign = "center";
 
@@ -581,7 +624,7 @@ function drawSmiley() {
   ctx.arc(cx, cy + 4, 26, 0.15 * Math.PI, 0.85 * Math.PI);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
   ctx.font = "10px Tahoma,sans-serif";
   ctx.textAlign = "center";
   ctx.fillText("click me", cx, cy + r + 22);
