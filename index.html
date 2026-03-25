@@ -75,24 +75,25 @@ let hoverProgress = 0;
 let hoverFrame    = null;
 
 let audioCtx;
-let audioBuffer;
+let gainNode;
 
 /* ── click → link ──────────────────────────── */
 cd.addEventListener("click", () => {
   window.location.href = "https://youtu.be/dQw4w9WgXcQ?si=GtJHGgjiBQBm4uSq";
 });
 
-/* ── first interaction → audio + decode buffer + glitch loop ── */
+/* ── first interaction → audio + web audio routing + glitch loop ── */
 document.addEventListener("click", () => {
   audio.play();
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   audioCtx.resume();
 
-  fetch("beach.wav")
-    .then(res => res.arrayBuffer())
-    .then(buf => audioCtx.decodeAudioData(buf))
-    .then(decoded => { audioBuffer = decoded; });
+  /* route <audio> through a gain node so we can stutter it */
+  const source = audioCtx.createMediaElementSource(audio);
+  gainNode = audioCtx.createGain();
+  source.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
 
   setInterval(triggerGlitch, 15000);
 }, { once: true });
@@ -154,7 +155,7 @@ function runHover() {
 
 /* ── glitch ── */
 function triggerGlitch() {
-  if (audio.paused || !audioBuffer) return;
+  if (audio.paused || !gainNode) return;
   isGlitching = true;
 
   if (hoverFrame) {
@@ -163,27 +164,27 @@ function triggerGlitch() {
     hoverProgress = 0;
   }
 
-  const baseTime = audio.currentTime % audioBuffer.duration;
   const duration = 1500;
 
   cd.style.animation = "none";
-  audio.muted = true;
 
-  let currentSource = null;
+  /* slow pitch */
+  audio.playbackRate = 0.6;
 
   const loop = setInterval(() => {
 
-    /* ── audio stutter ── */
-    if (currentSource) {
-      try { currentSource.stop(); } catch (e) {}
+    /* ── audio stutter via gain toggling ── */
+    const roll = Math.random();
+    if (roll > 0.65) {
+      gainNode.gain.value = 0;                          // silence gap
+    } else if (roll > 0.35) {
+      gainNode.gain.value = 0.2 + Math.random() * 0.4;  // quiet hit
+    } else {
+      gainNode.gain.value = 0.8 + Math.random() * 0.4;  // loud hit
     }
 
-    const source  = audioCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    source.playbackRate.value = 0.6;
-    source.connect(audioCtx.destination);
-    source.start(0, baseTime + Math.random() * 0.025, 0.1);
-    currentSource = source;
+    /* ── playback rate jitter ── */
+    audio.playbackRate = 0.4 + Math.random() * 0.45;
 
     /* ── visual glitch ── */
     const big   = Math.random() > 0.7;
@@ -220,15 +221,12 @@ function triggerGlitch() {
   setTimeout(() => {
     clearInterval(loop);
 
-    if (currentSource) {
-      try { currentSource.stop(); } catch (e) {}
-    }
-
-    isGlitching    = false;
-    audio.muted    = false;
-    cd.style.transform = "";
-    cd.style.filter    = "";
-    cd.style.opacity   = "";
+    isGlitching        = false;
+    gainNode.gain.value = 1;
+    audio.playbackRate  = 1;
+    cd.style.transform  = "";
+    cd.style.filter     = "";
+    cd.style.opacity    = "";
 
     void cd.offsetHeight;
     cd.style.animation = "float 4s ease-in-out infinite";
