@@ -46,7 +46,6 @@ body {
   position: relative;
   z-index: 1;
   animation: float 4s ease-in-out infinite;
-  mix-blend-mode: multiply; /* hides white edges / bg artifacts */
 }
 
 @keyframes float {
@@ -74,7 +73,7 @@ const hasHover = window.matchMedia("(hover: hover)").matches;
 
 let isGlitching   = false;
 let isHovering     = false;
-let hoverProgress  = 0;   // 0 → 1 over 2 s
+let hoverProgress  = 0;
 let hoverFrame     = null;
 
 /* ── click → link ──────────────────────────── */
@@ -106,7 +105,6 @@ function runHover() {
   let prev = performance.now();
 
   function tick(now) {
-    /* glitch takes priority */
     if (isGlitching) {
       hoverProgress = 0;
       hoverFrame = null;
@@ -116,12 +114,10 @@ function runHover() {
     const dt = (now - prev) / 1000;
     prev = now;
 
-    /* ramp up / down over 2 s */
     hoverProgress = isHovering
       ? Math.min(1, hoverProgress + dt / 2)
       : Math.max(0, hoverProgress - dt / 2);
 
-    /* fully wound down → restore float */
     if (hoverProgress <= 0 && !isHovering) {
       cd.style.transform = "";
       void cd.offsetHeight;
@@ -130,7 +126,6 @@ function runHover() {
       return;
     }
 
-    /* ease-in curve so shake starts subtle */
     const t = hoverProgress * hoverProgress;
 
     const scale = 1 + hoverProgress * 0.18;
@@ -147,7 +142,7 @@ function runHover() {
   hoverFrame = requestAnimationFrame(tick);
 }
 
-/* ── glitch (no color / filter changes) ────── */
+/* ── glitch (for the CD!!!) ────── */
 function triggerGlitch() {
   if (audio.paused) return;
   isGlitching = true;
@@ -195,7 +190,6 @@ function triggerGlitch() {
     void cd.offsetHeight;
     cd.style.animation = "float 4s ease-in-out infinite";
 
-    /* resume hover if cursor is still on cd */
     if (isHovering && hasHover) {
       hoverProgress = 0;
       cd.style.animation = "none";
